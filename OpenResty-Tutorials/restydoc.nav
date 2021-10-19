@@ -1,0 +1,133 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/_PjpdUEeKeM
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. In this video, I'll demonstrate how to use the `restydoc` command-line utility to lookup OpenResty documentation on terminal.
+
+        $ which restydoc
+        $ rpm -qf `which restydoc`
+
+    [S] The `restydoc` utility is shipped with OpenResty itself. The package name is `openresty-doc` on yum-based systems.
+
+    The package name is `openresty-restydoc` on debian-based systems, like Ubuntu 20.04.
+
+        ssh ubuntu20-pkg
+        [NEWSH][NOP]
+        $ which restydoc
+        $ dpkg -S `which restydoc`
+
+    We can lookup the docs for the standard Nginx directive `rewrite` like this.
+
+        [EXITSH][NOP]
+
+        restydoc -s rewrite[NONL]
+
+    [S] Note the `-s` option, which means "section".
+
+        [NOP]
+        [SLEEP=2][SP][NONL]
+
+    [S] It is extracted from the official Nginx documentation. Under the hood, it invokes the `less` utility.
+
+    We can use the space key to switch to the next page.
+
+        [SLEEP=1][SP][NONL]
+
+    We use the `q` key to quit.
+
+        q[NONL]
+        $
+
+    Or the standard Nginx's `listen` directive.
+
+        restydoc -s listen
+        [SLEEP=2][SP][NONL]
+        [SLEEP=1][SP][NONL]
+
+    Or our OpenResty's nginx module directives like `init_worker_by_lua`.
+
+        q[NONL]
+        $
+
+        restydoc -s init_worker_by_lua
+        [SLEEP=2][SP][NONL]
+        [SLEEP=1]q[NONL]
+        $
+
+    Standard Lua functions can be looked up too.
+
+        restydoc -s string.find
+
+    [S] It is extracted from the official Lua 5.1 reference manual.
+
+    Or the standard Lua's C API functions.
+
+        q[NONL]
+        $
+
+        restydoc -s lua_gc
+        [SLEEP=2][SP][NONL]
+
+    Or the LuaJIT's Lua API extension.
+
+        q[NONL]
+        $
+
+        restydoc -s ffi.cdef
+
+    Or OpenResty's own Lua API extension.
+
+        q[NONL]
+        $
+        restydoc -s ngx.re.match
+        [SLEEP=2][SP][NONL]
+        [SLEEP=1]q[NONL]
+        $
+
+    [S] All the `restydoc` commands above specify the `-s` option. This is because the displayed docs are all sections from some larger documents.
+
+    We can view large documents like a whole Nginx module's.
+
+        restydoc ngx_http_rewrite_module[NONL]
+
+    [S] Here we do not specify the `-s` option.
+
+        [NOP]
+
+    It's much longer, as expected.
+
+        [SLEEP=2][SP][NONL]
+        [SLEEP=1][SP][NONL]
+        [SLEEP=1][SP][NONL]
+
+    Or a whole Lua module.
+
+        q[NONL]
+        $
+
+        restydoc resty.redis
+
+    This is the `resty.redis` library shipped with OpenResty.
+
+        [SLEEP=2][SP][NONL]
+        [SLEEP=1][SP][NONL]
+        [SLEEP=1][SP][NONL]
+
+    Or specifying the Lua library name.
+
+        q[NONL]
+        $
+
+        restydoc lua-resty-lrucache[NONL]
+        [SLEEP=1][NOP]
+        [SLEEP=2][SP][NONL]
+        [SLEEP=1][SP][NONL]
+        [SLEEP=1]q[NONL]
+        $
+
+    To view all the options of `restydoc`, use the `-h` option.
+
+        $ restydoc -h
+
+    [S] That's all I'd like to cover today. Hopefully you've found this tool useful.

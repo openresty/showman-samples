@@ -2,8 +2,6 @@
 #
 # The generated video is here: https://youtu.be/AVR5Ft6FXTo
 
-lang 'en'
-
 term:
     Hi, I'm Matthew from OpenResty Inc. Today we will discuss how to share data across different HTTP requests served by an OpenResty application.
 
