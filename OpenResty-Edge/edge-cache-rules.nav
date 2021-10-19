@@ -1,3 +1,7 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/g8H0HYM3AdM
+
 d(image=edge-cache-miss.png):
     Hi, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to enable HTTP response caching in OpenResty Edge.
 
