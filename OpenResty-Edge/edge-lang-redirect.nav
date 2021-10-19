@@ -1,0 +1,609 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/Z7zeYz2zDbQ
+
+lang "en"
+
+d(image=lang-redirect.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to show how to redirect to different web pages based on the clients' language settings.
+
+d:
+    Let's say we have an origin site which supports different languages at different locations. For example, this is the `/en/` location.
+
+goto "http://$*EDGE_APP/en/"
+
+e:
+    [Text "Hello, world!"]=hello
+
+d:
+    Note the English text, "Hello World".
+
+callout -> hello
+
+d:
+    And we also have a French version under the `/fr/` location.
+
+goto "http://$*EDGE_APP/fr/"
+
+e:
+    [Text "Bonjour, le monde!"]=hello
+
+d:
+    This is French text.
+
+callout -> hello
+
+d(image=lang-redirect.png):
+    The goal here is when the client accesses the root location, `/`, we can automatically redirect to a language-specific location. We'll use the `Accept-Language` request header sent by the clients.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+goto "https://$*EDGE_ADMIN_HOST"
+
+e:
+  [Textbox "Search domain..."]=search
+
+d:
+  This time we use our on-going sample application for the !$*EDGE_APP! domain.
+
+"$*EDGE_APP\n" -> search
+
+e:
+    [Text "HTTP"] [Link /^test-edge\.com\b.*/]=app [Button "Edit"]
+
+d:
+    Let's enter this application.
+
+click -> app
+
+e:
+                               [Text /SSL handshake rate limiting.*?/]
+    [Link "Upstreams"]=up
+    [Link "Cache Purge"]
+
+d:
+    We already have an upstream defined.
+
+click -> up
+
+sleep 100ms
+
+mouse right 600px
+
+e:
+    [Text "my_backend"]=backend [Text "1"]=cnt [Text "http://54.213.103.191:80"]=url
+
+d:
+    This `my_backend` upstream has only 1 backend server. It is also the origin site we just tested at the beginning.
+
+callout -> backend, cnt
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+    [Link "Cache Purge"]
+
+d:
+    And we also have a page rule already defined.
+
+click -> rules
+
+sleep 300ms
+
+mouse right 550px
+
+e:
+    [Text "Always"]=cond [Text "Proxy"]=proxy
+                        [Text "Balancing policy: Round Robin"]=rr
+
+d:
+    This page rule sets up a reverse proxy to the `my_backend` upstream which we just saw earlier.
+
+callout -> cond, proxy, rr
+
+e:
+    [Button "New Rule"]=new
+
+d:
+    Create a new page rule.
+
+click -> new
+
+e:
+    [Label "Enable when"]  [Toggle ""]=toggle
+
+d:
+    We enable a rule condition to check for the URI `/`.
+
+click -> toggle
+
+e:
+    [Text "URI"]=uri
+
+d:
+    Let's see all the variables we can choose from.
+
+click -> uri
+
+e:
+    [Text "URI"]=uri
+
+d:
+    Select `URI`.
+
+click -> uri
+
+e:
+    [Text "URI"]
+    [Dropdown "Operator"]=op
+
+d:
+    We choose the string equality operator.
+
+click -> op
+
+e:
+    [Text "URI"]
+    [Dropdown "Operator"]
+    [Option "String ="]=equals
+
+click -> equals
+
+e:
+    [Text "URI"]
+    [Dropdown "Operator"]
+    [Option "String ="]
+    [Dropdown "Value"]    [Textbox "value"]=val
+
+d:
+    Enter the value `/` to match the root location only.
+
+"/" -> val
+
+e:
+    [Button "Add a new condition"]=new
+
+d:
+    And a second condition to check the language.
+
+click -> new
+
+e:
+    [Text "URI"]
+            [Button "Add more value"]
+    [Text "URI"]=uri
+
+click -> uri
+
+e:
+    [Text "Request header"]=header
+
+d:
+    We choose "Request header" for the variable.
+
+click -> header
+
+e:
+    [Textbox "Header name"]=name
+
+d:
+    Enter the request header name, "Accept-Language".
+
+'Accept-Language' -> name
+
+e:
+    [Text "Request header"]
+    [Dropdown "Operator"]=op
+
+d:
+    For the match operator,
+
+click -> op
+
+e:
+    [Text "Request header"]
+    [Dropdown "Operator"]
+    [Option "Prefix matches"]=prefix
+
+d:
+    We choose "prefix".
+
+click -> prefix
+
+e:
+    [Text "Request header"]
+    [Dropdown "Operator"]
+    [Dropdown "value"]=val
+
+ds:
+    This is because when multiple languages are specified at the same time, we only care about the first one.
+
+d:
+    For the matched value, we select the regular expression type, "Regex".
+
+click -> val
+
+e:
+    [Text "Request header"]
+    [Dropdown "Operator"]
+    [Dropdown "value"]=val
+    [Option "Regex"]=regex
+
+click -> regex
+
+e:
+    [Text "Request header"]
+    [Dropdown "Operator"]
+    [Dropdown "value"]  [Textbox "value"]=val
+
+d:
+    Enter the regex value, "fr\b".
+
+"fr\\b" -> val
+
+e:
+    [Text "Request header"]
+    [Dropdown "Operator"]   [Checkbox "Caseless"]=cbx
+                      [Textbox "Value"]
+
+ds:
+    The "\b" sequence means matching a word boundary. Then both "fr" and "fr-CA" will get matched, for example.
+
+d:
+    Here we check the "Caseless" box to do case insensitive matching.
+
+click -> cbx
+
+e:
+    [Label "Action"]
+    [Button "Add a new action"]=new
+
+ds:
+    Note that we now have two conditions and they are AND'd together. That is, both of them must be matched for the actions below to be executed. The conditions are now complete.
+
+d:
+    Now we add a new action.
+
+click -> new
+
+e:
+    [Text "Select or Search Action Types"]=types
+
+d:
+    Search for the action "redirect".
+
+click -> types
+
+"redirect" -> types
+
+e:
+    [Text "Redirect"]=redirect
+
+d:
+    Choose the action type, "redirect".
+
+click -> redirect
+
+e:
+    [Dropdown "URI"]=uri
+
+d:
+    Then we configure the target URI to jump to.
+
+click -> uri
+
+e:
+    [Dropdown "URI"]
+    [Option "custom"]=custom
+
+d:
+    Choose "custom". We want to enter the URI ourselves.
+
+click -> custom
+
+e:
+    [Text "Redirect"]
+        [Dropdown "URI"]
+            [Textbox "Value"]=url
+
+d:
+    Enter "/fr/".
+
+'/fr/' -> url
+
+e:
+    [Dropdown "URI arguments"]=op
+    [Dropdown "Scheme"]=scheme
+    [Dropdown "Host"]=host
+    [Textbox "Port"]=port
+    [Dropdown "Status Code"]=status
+
+d:
+    Keep the remaining fields intact.
+
+callout -> op, scheme, host, port, status
+
+e:
+    [Checkbox "Skip any subsequent page rules when this rule matches"]=skip
+
+d:
+    We skip any subsequent rules if this rule is matched.
+
+click -> skip
+
+e:
+  [Radio "Set as an Always-Top rule"]=radio
+  [Button "Cancel"]    [Button "Create"]=create
+
+d:
+    We need to make sure that this rule always runs before other rules. Let's mark it as an Always-Top rule. An Always-Top rule is not a "normal rule".
+
+click -> radio
+
+d:
+    Save this rule.
+
+click -> create
+
+e:
+    [Text /\d+/]=id [Text "URI"]=cond  [Text "Rewrite"]=type                [Toggle "toggle"]=toggle [Button "Delete"]=del
+                    [Text "rx{fr\\b}"]=val  [Text /.*HTTP Code: 302/]=redirect
+
+d:
+    We can see the newly added page rule is indeed on the top of the rule list.
+
+callout -> id, cond, type, redirect, toggle, del, val
+
+e:
+    [Text /You have \d+ pending changes?/] [Link "to be released"]=rel
+
+ds:
+    It is indeed before our previous proxy rule.
+
+d:
+    We need to make a new release to push out our new page rule, as always.
+
+click -> rel
+
+e:
+    [Button /Clear the \d+ pending changes?/] [Button /Release the \d+ pending changes?/]=rel
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=rel
+
+d:
+    Ship it!
+
+click -> rel
+
+e:
+    [Text /Sync Status: \d+ \/ \d+ \(100%\)/]=note
+
+d:
+    It is fully synchronized.
+
+callout -> note
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+
+d(video=edge-sync.mp4):
+    Now the new page rule has been pushed to all the gateway clusters and servers.
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient and scalable.
+
+term:
+
+    On the terminal, we can send HTTP requests with curl.
+
+        curl -I -H 'Accept-Language: fr-CA, fr, en' http://test-edge.com/[NONL]
+
+    [H="fr-CA, fr, en"] Note that we specify 3 languages: `fr-CA`, fr`, and `en`. So French takes precedence over English for this request.
+
+    Run this command.
+
+        [NOP]
+
+    [H="Location: /fr/"] Note that it is indeed a redirect to `/fr/`.
+
+    We can make `curl` follow redirects automatically.
+
+       curl -L -H 'Accept-Language: fr, en' http://test-edge.com/[NONL]
+
+    [H="-L"] Note the `-L` option.
+
+    Run this command.
+
+        [NOP]
+
+    [H="Bonjour, le monde!"] We can see the French text returned.
+
+d:
+    Next we'd add a generic page rule to redirect to the English page for other languages.
+
+click -> rules
+
+e:
+    [Button "New Rule"]=new
+
+d:
+    Create a new page rule.
+
+click -> new
+
+e:
+    [Label "Enable when"]  [Toggle ""]=toggle
+
+d:
+    We still enable a rule condition to check for the URI `/`.
+
+click -> toggle
+
+e:
+    [Text "URI"]=uri
+
+click -> uri
+
+e:
+    [Text "URI"]=uri
+
+d:
+    Still select `URI`.
+
+click -> uri
+
+e:
+    [Text "URI"]
+    [Dropdown "Operator"]=op
+
+d:
+    Still string equality.
+
+click -> op
+
+e:
+    [Text "URI"]
+    [Dropdown "Operator"]
+    [Option "String ="]=equals
+
+click -> equals
+
+e:
+    [Text "URI"]
+    [Dropdown "Operator"]
+    [Option "String ="]
+    [Dropdown "Value"]    [Textbox "value"]=val
+
+d:
+    Enter value `/` as before.
+
+"/" -> val
+
+e:
+    [Label "Action"]
+    [Button "Add a new action"]=new
+
+ds:
+    The condition is now complete. This time we don't bother checking the request header.
+
+d:
+    Add a new redirect action as before.
+
+click -> new
+
+e:
+    [Text "Select or Search Action Types"]=types
+
+click -> types
+
+"redirect" -> types
+
+e:
+    [Text "Redirect"]=redirect
+
+click -> redirect
+
+e:
+    [Dropdown "URI"]=uri
+
+click -> uri
+
+e:
+    [Dropdown "URI"]
+    [Option "custom"]=custom
+
+click -> custom
+
+e:
+    [Text "Redirect"]
+        [Dropdown "URI"]
+            [Textbox "Value"]=url
+
+d:
+    This time, we enter "/en/" for the target URI.
+
+'/en/' -> url
+
+e:
+    [Checkbox "Skip any subsequent page rules when this rule matches"]=skip
+
+d:
+    We skip any subsequent rules if this rule is matched.
+
+click -> skip
+
+e:
+  [Radio "Insert before any existing normal rules"]=radio
+  [Button "Cancel"]    [Button "Create"]=create
+
+d:
+    We still make sure that this rule runs before any other "normal rules".
+
+click -> radio
+
+d:
+    Save this rule.
+
+click -> create
+
+e:
+    [Text /\d+/]=id [Text "URI"]=cond  [Text "Rewrite"]=type                [Toggle "toggle"]=toggle [Button "Delete"]=del
+                                 [Text /.*?\/en\/.*/]
+                                 [Text /.*HTTP Code: 302/]=redirect
+
+d:
+    We can see the newly added page rule is before the proxy rule but after the French language rule.
+
+callout -> id, cond, type, redirect, toggle, del
+
+e:
+    [Text /You have \d+ pending changes?/] [Link "to be released"]=rel
+
+d:
+    Make a new configuration release again.
+
+click -> rel
+
+e:
+    [Button /Clear the \d+ pending changes?/] [Button /Release the \d+ pending changes?/]=rel
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=rel
+
+d:
+    Ship it again!
+
+click -> rel
+
+e:
+    [Text /Sync Status: \d+ \/ \d+ \(100%\)/]=note
+
+d:
+    It is synchronized again.
+
+callout -> note
+
+new tab test
+
+d:
+    We can test the `/` location with the web browser. This web browser uses the English language setting.
+
+goto "http://$*EDGE_APP/"
+
+e:
+    [Text "Hello, world!"]=hello
+
+d:
+    We can see the English text "Hello, world" is returned.
+
+callout -> hello
+
+ds:
+    And we can also see from the address bar, the URI becomes `/en/`. This is what I'd like to cover today.
