@@ -1,0 +1,304 @@
+# The generated video is here: https://youtu.be/9Dy43JXaxKQ
+
+d(image=edge-cache-hit.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to show how to purge OpenResty Edge's HTTP cache across the whole gateway network in real time.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+goto "https://admin.openresty.com"
+
+e:
+    [Textbox "Search domain..."]=search
+
+d:
+    This time we use a real world application for our openresty.org website.
+
+"openresty.org\n" -> search
+
+e:
+    #[Text "Recent:"] [Link "openresty.org *.openresty.org"]=app
+    [Text "HTTP"] [Link /openresty\.org.*/]=app
+
+d:
+    Enter this application.
+
+click -> app
+
+e:
+    [Link "Upstreams"]
+    [Link "Cache Purge"]=purge
+    [Link "Error Logs"]
+
+d:
+    Go to the Cache Purge page of this application.
+
+click -> purge
+
+sleep 100ms
+
+mouse right 600px
+
+e:
+    [Button "New Purge Job"]=new
+
+d:
+    We can see that we already have a lot of previous purge jobs.
+
+scroll down 400px
+
+sleep 500ms
+
+scroll up 400px
+
+d:
+    Let's create a new purge job.
+
+click -> new
+
+e:
+    [Link "Full URLs"]=full [Link "URL Prefixes"]=prefix [Link "Custom Conditions"]=custom
+    [Textbox "Full URLs"]=full_txt
+                [Button "Submit"]=submit
+
+d:
+    We can see that we can purge either by full URLs,
+
+callout -> full
+
+d:
+    URL prefixes,
+
+callout -> prefix
+
+d:
+    or complex custom conditions.
+
+callout -> custom
+
+d:
+    We'd try the full URL mode first.
+
+"https://openresty.org/en/faq.html" -> full_txt
+
+ds:
+    This is the FAQ page on that site. Note that it does not matter if we use `http://` or `https://` here. This is because we did not include the scheme string in our cache key. The scheme string is not included by default.
+
+d(image=edge-cache-hit.png):
+    Before submitting the purge job, let's make sure the cache is a hit for this web page so that we can test the effect of purges.
+
+term:
+    On the terminal, we can send test requests to the FAQ web page to make sure it is already a cache hit.
+
+        $ curl -I https://openresty.org/en/faq.html
+
+    Do it again:
+
+        [UP]
+        $
+
+    [H="Cache-Status: HIT"] Note the `Cache-Status: HIT` response header returned.
+
+d:
+    Then submit our cache purge job.
+
+click -> submit
+
+sleep 200ms
+
+mouse right 200px
+
+e(3s):
+    [Text "Cache purge job submitted successfully."]=done
+
+d:
+    Great! It is already purged across the whole network.
+
+callout -> done
+
+d(video=purge-sync.mp4):
+    Unlike the rest of the application-level configurations, cache purge jobs are synchronized across the gateway network immediately. It does not require making new application configuration releases.
+
+d(image=req-sync4.png):
+    Cache purges do not require server reload, restart, or binary upgrade.
+
+term:
+    Let's verify the cache status again on the terminal.
+
+        $ curl -I https://openresty.org/en/faq.html
+
+    [H="Cache-Status: EXPIRED"] Note the `Cache-Status: EXPIRED` response header returned. It is indeed a cache miss now.
+
+    The second request should be a cache hit again.
+
+        [UP]
+        $
+
+    [H="Cache-Status: HIT"] Note the `Cache-Status: HIT` response header.
+
+d:
+    Let's try purging by URL prefixes this time.
+
+e:
+    [Link "Full URLs"] [Link "URL Prefixes"]=prefix [Link "Custom Conditions"]
+
+click -> prefix
+
+sleep 200ms
+
+mouse right 400px
+
+e:
+    [Link "Full URLs"] [Link "URL Prefixes"] [Link "Custom Conditions"]
+    [Textbox "URL Prefixes"]=prefix_txt
+                    [Button "Submit"]=submit
+
+d:
+    We purge everything under the `/en/` location.
+
+"https://openresty.org/en/" -> prefix_txt
+
+d:
+    Now submit the new job.
+
+click -> submit
+
+sleep 200ms
+
+mouse right 200px
+
+e(3s):
+    [Text "Cache purge job submitted successfully."]=done
+
+d:
+    It has been propagaged to the whole gateway network now.
+
+callout -> done
+
+term:
+    send the test request to our FAQ page.
+
+        $ curl -I https://openresty.org/en/faq.html
+
+    [H="Cache-Status: EXPIRED"] It is indeed a cache miss as expected.
+
+    Test another page under the `/en/` URI prefix, the events page.
+
+        $ curl -I https://openresty.org/en/events.html
+
+    [H="Cache-Status: EXPIRED"] It is also a cache miss as desired.
+
+    Or the `/en/` page itself.
+
+        curl -I https://openresty.org/en/
+
+    [H="Cache-Status: EXPIRED"] Also a cache miss.
+
+d:
+    We can also purge other kinds of resources like all CSS files,
+
+e:
+    [Textbox "URL Prefixes"]=prefix_txt
+                [Button "Submit"]=submit
+
+"\nhttps://openresty.org/css/" ->> prefix_txt
+
+d:
+    all our images,
+
+"\nhttps://openresty.org/images/" ->> prefix_txt
+
+ds:
+    as long as these files are grouped under pre-defined URL locations.
+
+d:
+    We don't bother actually submitting this new purge job.
+
+callout -> submit
+
+d:
+    We may want to define more complicated purge conditions.
+
+e:
+    [Link "Full URLs"]=full [Link "URL Prefixes"]=prefix [Link "Custom Conditions"]=custom
+
+click -> custom
+
+sleep 200ms
+
+mouse right 400px
+
+e:
+    [Text "Variable"]
+    [Dropdown "Operator"]=op
+
+ds:
+    We could, for instance, purge all resources with the URI suffix `.css`. No matter what their URI locations are.
+
+d:
+    Choose the suffix match operator.
+
+click -> op
+
+e:
+    [=op]
+    [Option "Prefix matches"]
+    [Option "Suffix matches"]=suffix
+
+click -> suffix
+
+sleep 100ms
+
+press('Escape') -> op
+
+d:
+    And then enter the suffix string value.
+
+e:
+    [Dropdown "Value"] [Textbox "value"]=val
+
+".css" -> val
+
+d:
+    We can add more conditions to the current purge job which are AND'd together.
+
+e:
+    [Button "Add a new condition"]=add
+
+click -> add
+
+sleep 100ms
+
+mouse right 400px
+
+d:
+    We may add a condition checking URI arguments, request headers, cookies, and many more.
+
+e:
+    [Text "-- AND --"]
+    [Text "Variable"]=var
+    [Dropdown "String"]=val
+    [Button "Add more value"]=add_val
+
+click -> var
+
+d:
+    We may also use wildcard or regular expression patterns instead of a literal string pattern.
+
+press("Escape") -> var
+
+click -> val
+
+sleep 100ms
+
+mouse right 400px
+
+d:
+    Or add more value patterns which are OR'd together.
+
+press("Escape") -> val
+
+click -> add_val
+
+ds:
+    Feel free to try these conditions yourself. As we can see, it is very flexible, just like our Page Rules' conditions. This is what I'd like to cover today.
