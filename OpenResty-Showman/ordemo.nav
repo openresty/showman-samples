@@ -1,0 +1,99 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/oew5RYUPMYY
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to share how we generate our tutorial videos via the OpenResty Demo tool chain.
+
+        uname -a
+        cd ~/git/ordemo2/
+
+    [S] Yes, our videos were all automatically generated, including this one you're currently watching.
+
+    Basically we humans just write a screenplay file for each video. Let's create an example file, `bash.sp`.
+
+        vim bash.sp
+
+    In this example, we try to explain some basic bash usage.
+
+        i[NONL]
+        Today I'll demonstrate some bash usage.
+        [NOP]
+
+    [S] This is some narrator which computer will eventually speak out in the final video. And as you might have have guessed, I, Matthew, am a computer voice.
+
+    And while speaking this sentence, we can make the machine do something in the terminal.
+
+        [TAB]ps -p "$$"
+        [BS]
+
+    [S] Note that shell commands all have an indentation.
+
+    And we can also pause the terminal operation, and speak something.
+
+        [LSQUARE]S] As we can see we are currently in a bash session.
+
+    [S] Note the `[S]` prefix which means "synchronous". By default, it is asynchronous.
+
+    We can add more stuff to the screenplay file.
+
+        [NOP]
+        Let's do a hello world in bash.
+        [NOP]
+
+    More commands here.
+
+        [TAB]echo 'hello world!'
+        [BS]
+
+    And some final narrator.
+
+        [LSQUARE]S] We can see the hello world string is printed.[NONL]
+
+    Save and quit the file.
+
+        [ESC][NONL]
+        :wq[NONL]
+        [SLEEP=1][NOP]
+        $
+
+    We can use our OpenResty Demo tool chain to process this screenplay file. This file contains all the necessary information needed for generating the final video.
+
+        $ ./gen bash.sp
+
+    [S] It now completes processing the screenplay file. It has also finished executing all the shell commands which can be replayed.
+
+    We use our Ops language tool chain to automate the terminal operations.
+
+        opslang -h | less
+        [SLEEP=1.5] [SP] [NOP]
+        [SLEEP=1] q [NONL]
+        $
+
+    The second step is to generate the audio as a bunch of MP3 files.
+
+        $ ./gen-audio.sh
+
+    Finally, we generate the final video file.
+
+        $ ./gen-video.sh bash
+
+    We're all set! We can now check the generated files ready for being uploaded to YouTube.
+
+        [NOP]
+        $ ls -lh bash.mp4 bash.srt
+
+    [S] The MP4 file is the video file. And the SRT file is the corresponding subtitles with accurate timing information.
+
+    Web browser operations can be automated by our Nav language tool chain.
+
+        ../navlang/navlang -h | less
+        [SLEEP=1.5] [SP] [NOP]
+        [SLEEP=1] q [NONL]
+        $
+
+    [S] We'll cover this web topic in a separate video.
+
+    [S] This video will be concluded by the generated bash video in a few seconds.
+
+    [V=bash.mp4]

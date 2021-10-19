@@ -72,12 +72,13 @@ OpenResty Showman
 
 [OpenResty-Showman/](OpenResty-Showman/) is for our [OpenResty Showman](https://www.youtube.com/playlist?list=PLlR4WakbzQp14ovGVZCtTKdfX3u4u7PNR) YouTube playlist.
 
-Most of the samples under this directory use the `Narrative` language to add narrative voices and subtitles to manually-recorded videos. Some use [navlang](https://doc.openresty.com/en/navlang/) instead.
+Most of the samples under this directory use the `Narrative` language to add narrative voices and subtitles to manually-recorded videos. Some use [navlang](https://doc.openresty.com/en/navlang/) to do automated terminal or command-line interactions instead.
 
 It contains the following screenplay files:
 
 * Screenplay [showman-google.nar](OpenResty-Showman/showman-google.nar) is for video [How to Auto-Generate Demo Videos for Google Search from Screenplay Docs (via OpenResty Showman)](https://youtu.be/i_n53z_zE3A).
 * Screenplay [showman-baidu.nar](OpenResty-Showman/showman-baidu.nar) is for video [Auto-Generate Demo Videos for Baidu Search from Screenplay Documents (in Chinese)](https://youtu.be/y_g6B4aRc5o).
+* Screenplay [ordemo.nav](OpenResty-Showman/ordemo.nav) is for video [How We Generate Videos from Screenplay Files](https://youtu.be/oew5RYUPMYY).
 
 [Back to TOC](#table-of-contents)
 
