@@ -1,0 +1,310 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/H1T-019IK2k
+
+lang 'en'
+
+d(image=http2https2.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to show how to enforce the use of SSL on your sites. That is, redirecting all user HTTP requests to their HTTPS counterparts.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+goto "https://admin.openresty.com"
+
+e:
+    [Textbox "Search domain..."]=search
+
+d:
+    This time we use our continuing sample application for the !$*EDGE_APP! domain.
+
+"$*EDGE_APP\n" -> search
+
+e:
+    [Text "HTTP"] [Link /.*?$*EDGE_APP/]=app [Link /.*?HTTPS:\s*443.*/]=type [Button "Edit"]
+
+d:
+    Let's enter this application.
+
+click -> app
+
+e:
+    [Link "User Variables"]
+    [Link "Page Rules"]=rules
+
+d:
+    Let's go to the page rules.
+
+click -> rules
+
+e:
+    [Button "New Rule"]=new_rule
+
+d:
+    Create a new page rule.
+
+click -> new_rule
+
+e:
+    [Label "Enable when"] [Toggle ""]=cond
+
+d:
+    We enable a rule condition for all HTTP requests.
+
+click -> cond
+
+e:
+    [Text "URI"]=var
+    [Dropdown "Operator"]=op
+    [Dropdown "Value"]=val
+
+d:
+    Let's see all the variables we can choose from.
+
+click -> var
+
+e:
+    [=var]
+    [Text "Scheme"]=scheme
+
+d:
+    We select `Scheme`.
+
+click -> scheme
+
+sleep 500ms
+
+e:
+    [Dropdown "Operator"]=op
+
+d:
+    We keep the string equality operator intact.
+
+callout -> op
+
+e:
+    [Dropdown "Value"]=val
+
+d:
+    We choose `http` as the value.
+
+click -> val
+
+e:
+    [=val]
+    [Option "http"]=http
+
+click -> http
+
+sleep 500ms
+
+press('Escape') -> val
+
+ds:
+    The condition is now complete. It is matching all HTTP requests and excluding any HTTPS ones.
+
+e:
+    [Label "Action"]
+    [Button "Add a new action"]=new_action
+
+d:
+    Then for the action part of the rule, we can configure a 301 redirect action.
+
+click -> new_action
+
+e:
+    [Label "Action"]
+    [Text "Select or Search Action Types"]=search
+
+d:
+    We have a lot of actions here.
+
+click -> search
+
+e:
+    [Textbox "Select or Search Action Types"]=search
+
+d:
+    So better search for the `Redirect` action.
+
+"redirect" -> search
+
+e:
+    [Text "Redirect"]=redir
+
+d:
+    Select it.
+
+click -> redir
+
+e:
+    [Dropdown "URI"]=uri
+    [Dropdown "URI arguments"]=args
+    [Dropdown "Scheme"]=scheme
+    [Dropdown "Host"]=host
+
+d:
+    We keep the current request URI intact.
+
+callout -> uri
+
+d:
+    And we also inherit the current request's URI arguments or query string.
+
+click -> args
+
+e:
+    [=args]
+    [Option "current"]=opt
+
+click -> opt
+
+sleep 500ms
+
+press('Escape') -> args
+
+e:
+    [Dropdown "URI"]=uri
+    [Dropdown "URI arguments"]=args
+    [Dropdown "Scheme"]=scheme
+
+d:
+    We need to change the request scheme of the new request though.
+
+click -> scheme
+
+e:
+    [Dropdown "URI arguments"]
+    [=scheme]
+    [Option "https"]=https
+
+d:
+    We select `https`.
+
+click -> https
+
+sleep 500ms
+
+press('Escape') -> scheme
+
+e:
+    [Dropdown "Status Code"]=status
+
+d:
+    We can select 301 redirect instead here.
+
+click -> status
+
+e:
+    [=status]
+    [Option "301 (Moved Permanently)"]=perm
+
+d:
+    It is the "Moved Permantly" redirect type.
+
+click -> perm
+
+sleep 500ms
+
+press('Escape') -> status
+
+e:
+    [Radio "Insert before any existing normal rules"]=before
+
+d:
+    We make sure this rule runs before any existing normal rules.
+
+click -> before
+
+e:
+    [Checkbox "Skip any subsequent page rules when this rule matches"]=skip
+
+d:
+    Make sure we skip any subsequent rules when this rule is matched.
+
+click -> skip
+
+ds:
+    It's not really necessary for this rule. But it is always a good idea to be explicit when we want to immediately stop request processing.
+
+e:
+    [Link "Cancel"] [Button "Create"]=create
+
+d:
+    Create this rule for real.
+
+click -> create
+
+e:
+    [Text /\d+/]=id [Text "Scheme"]=cond [Text "Rewrite"]=type                 [Button "Delete"]=del
+                                                      [Text /.*HTTP Code: 301/]=redirect
+
+d:
+    We can see our new page rule to redirect all HTTP requests to their HTTPS counterparts.
+
+callout -> id, cond, type, redirect, del
+
+e:
+    [Text /You have \d+ pending changes?/] [Link "to be released"]=rel
+
+d:
+    We need to make a new release to push out our new page rule, as always.
+
+click -> rel
+
+e:
+    [Button /Clear the \d+ pending changes?/] [Button /Release the \d+ pending changes?/]=rel
+
+d:
+    Click on this button.
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=rel
+
+d:
+    Ship it!
+
+click -> rel
+
+e:
+    [Text /Sync Status: \d+ \/ \d+ \(100%\)/]=note
+
+d:
+    It is fully synchronized.
+
+callout -> note
+
+d(video=edge-sync.mp4):
+    Now the new page rule has been pushed to all the gateway clusters and servers.
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient and scalable.
+
+d:
+    Let's open a new browser tab to access the !$*EDGE_APP! site via `HTTP`.
+
+new tab test
+
+goto http://$*EDGE_APP/
+
+sleep 500ms
+
+ds:
+    We can see it indeed becomes `HTTPS`. Note the small lock icon in the browser address bar.
+
+term:
+    On the terminal, we can also test it out using `curl`.
+
+        curl -Ss -I http://test-edge.com/
+
+    [H="https"] It is indeed a 301 redirect to use the HTTPS protocol.
+
+    Let's try a more complex URI and query string.
+
+        curl -Ss -I 'http://test-edge.com/foo/bar?a=32&b=56'
+
+    [H="https"] We can see it is still a redirect to `HTTPS`.
+
+    [H="/foo/bar?a=32&b=56"] And the URI and query string are also carried on. This is what I'd like to cover today.
