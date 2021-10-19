@@ -1,0 +1,219 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/B5lfAZunxfc
+
+lang 'en'
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to install OpenResty on CentOS 8 via `dnf`.
+
+        ssh centos8-min
+        [NEWSH][NOP]
+        $ cat /etc/os-release
+
+    [S] We'll use this fresh install of CentOS 8 in this video.
+
+desc:
+    We can always goto the [openresty.org](https://openresty.org/) web site to find the instructions.
+
+goto "https://openresty.org"
+
+desc:
+    Then click on the Installation menu.
+
+elems:
+    [Link "Blog"]
+    [Link "Download"]=dl
+    [Link "Installation"]=inst
+
+click -> inst
+
+desc:
+    And click on the link "official pre-built packages".
+
+elems:
+    [Title "Binary Packages"]
+    [Link "official pre-built packages"]=pkgs
+
+click -> pkgs
+
+desc:
+    We do support a lot of Linux distributions.
+
+elems:
+    [Title "OpenResty® Linux Packages"]
+
+scroll down 420px
+
+desc:
+    Scroll down to the CentOS section.
+
+elems:
+    [Text "You can add the"] [Text "openresty"] [Text /repository to your CentOS system.*?/]
+
+scroll down 790px
+
+desc(sync):
+    We can find all the commands for enabling the yum repository and installing the OpenResty rpm packages.
+
+term:
+    Back to our CentOS 8 system, first install the standard `wget` package if you don't have it already.
+
+        $ sudo dnf -y install wget
+
+    Use `wget` to download the openresty.repo file from our site.
+
+        $ wget 'https://openresty.org/package/centos/openresty.repo'
+
+    We move this file into the yum repositories' configuration directory.
+
+        $ sudo mv openresty.repo /etc/yum.repos.d/
+
+    [S] Note that we need `sudo` here.
+
+    We update the yum index database.
+
+        [FAIL] $ sudo dnf check-update > /dev/null 2>&1
+
+    Now it's time to install our main RPM package, `openresty`.
+
+        $ sudo dnf -y install openresty
+
+    Check if the `openresty` executable is available.
+
+        $ which openresty
+
+    This `openresty` executable is just a symbolic link.
+
+        $ file `which openresty`
+
+    And check its version.
+
+        $ openresty -V
+
+    We can start the default openresty server like this.
+
+        $ sudo systemctl start openresty
+
+    Check if the nginx processes are up and running.
+
+        $ ps aux|grep nginx
+
+    [S] Perfect.
+
+    Test the default home page with the `curl` command.
+
+        $ curl 127.0.0.1/
+
+    [S] Yay, it's working.
+
+    Note, however, that the `resty` command-line utility is not installed yet.
+
+        $ which resty
+
+    If you want it, then you can install the `openresty-resty` RPM package from the same repository.
+
+        $ sudo dnf -y install openresty-resty
+
+    Now it should be ready.
+
+        $ which resty
+        $ resty -e 'print("Hello Resty")'
+
+    Similarly, if you want to use the `restydoc` command-line utility, you should install the `openresty-doc` package.
+
+        $ sudo dnf -y install openresty-doc
+
+    Now it's available too.
+
+        restydoc -s content_by_lua_file
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] q [NONL]
+        $
+
+    We can also install OPM for installing more Lua modules contributed by the OpenResty community.
+
+        $ sudo dnf -y install openresty-opm
+
+    We can try installing the `lua-resty-http` library authored by James Hurst.
+
+        $ sudo opm get pintsized/lua-resty-http
+
+    Try loading it with the `resty` utility.
+
+        $ resty -e 'require "resty.http"'
+
+    [S] Success!
+
+    There is also a debug build of OpenResty which includes debugging logs and all the internal assertions enabled.
+
+        $ sudo dnf -y install openresty-debug
+
+    We can invoke this debug version of openresty like this.
+
+        $ which openresty-debug
+
+    This `openresty-debug` executable is also a symbolic link.
+
+        $ file `which openresty-debug`
+
+    [S] We should never use it in production since it is much slower than the release build.
+
+    Furthermore, there are also special builds for checking memory issues via Valgrind and Address Sanitizer.
+
+        $ sudo dnf list openresty-valgrind openresty-asan
+
+    [S] Try these when you have memory issues to debug. We may cover these in future tutorials.
+
+    To upgrade OpenResty packages to their latest versions, just run these commands.
+
+        [FAIL] $ sudo dnf check-update > /dev/null 2>&1
+        $ sudo dnf upgrade 'openresty*'
+
+    To check all the available packages in our openresty repository.
+
+        dnf --disablerepo='*' --enablerepo="openresty" list available | less
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+
+    [S] We've got a lot of binary packages here.
+
+        [SLEEP=1] q [NONL]
+        $
+
+desc:
+    We can find detailed documentation for all these RPM packages on this web page.
+
+goto "https://openresty.org/en/rpm-packages.html"
+
+desc:
+    We have indeed got a lot of packages for the user to choose from.
+
+elems:
+    [Title "openresty"]
+
+sleep 500ms
+
+scroll down 500px
+
+sleep 500ms
+
+scroll down 600px
+
+sleep 500ms
+
+scroll down 600px
+
+sleep 500ms
+
+elems:
+    [Title "Debuginfo Packages"]
+
+sleep 500ms
+
+scroll down 200px
+
+sleep 200ms
+
+ds:
+    That's all I'd like to cover today. Have fun!
