@@ -1,0 +1,288 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/DV-uPZ-I5og
+
+d(image=ssl-upload2.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to show how to upload your own SSL certificates to your HTTPS applications in OpenResty Edge.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+lang 'en'
+goto "https://admin.openresty.com"
+
+d:
+    This time we use our continuing sample application for the !$*EDGE_APP! domain.
+
+e:
+    [Textbox "Search domain..."]=search
+
+"$*EDGE_APP\n" -> search
+
+sleep 100ms
+
+e:
+    [Text "HTTP"] [Link "$*EDGE_APP"]=app [Link /.*?HTTPS:\s*443.*/]=type [Button "Edit"]
+
+d:
+    We can see that it already listens on the 443 port for SSL.
+
+callout -> type
+
+d:
+    Let's enter this application.
+
+click -> app
+
+e:
+    [Link "DNS"]
+    [Link "SSL"]=ssl
+    [Link "User Variables"]
+
+d:
+    Goto the SSL page.
+
+click -> ssl
+
+sleep 100ms
+
+mouse right 500px
+
+e:
+    [Text "There's no certificates added."]=note
+
+d:
+    We can see that there are no SSL certificates defined yet.
+
+callout -> note
+
+e:
+    [Button "Reorder"] [Button "Add Certificate"]=add
+
+d:
+    Let's add a new certificate.
+
+click -> add
+
+e:
+    [Label "Source"] [Radio "Manual Upload"]=upload
+                     [Radio "Let's Encrypt"]
+                     [Radio "General ACME Issuer"]=custom
+                     [Radio "Global Certificate"]=global
+
+d:
+    We support various ways to add a new SSL certificate, including Let's Encrypt.
+
+callout ->  upload, custom, global
+
+d:
+     Here we'd just demonstrate the manual uploading way.
+
+click -> upload
+
+e:
+    [Textbox "Private Key (PEM format)"]=key
+    [Button "Browse local files"]=select_key
+    [Textbox "Server Certificate (PEM format)"]=cert
+    [Button "Browse local files"]=select_cert
+    [Textbox "Intermediate CA certificate chain (PEM)"]=intermediate
+
+d:
+    We can copy and paste our SSL private key in the PEM format here.
+
+"$*EDGE_SSL_KEY" => key
+
+d:
+    We could browse the local file system and upload a local file instead.
+
+callout -> select_key
+
+d:
+    And also paste the corresponding SSL certificate in the PEM format.
+
+"$*EDGE_SSL_CERT" => cert
+
+d:
+    Again, we could browse and upload a local certificate file instead.
+
+callout -> select_cert
+
+d:
+    Sometimes the CA may provide a separate file containing intermediate trusted CA certificate chain.
+
+callout -> intermediate
+
+d:
+    But more often the chain is already included in the server certificate file here.
+
+callout -> cert
+
+d:
+    We leave it blank for this example since we don't have any.
+
+callout -> intermediate
+
+e:
+    [Link "Cancel"] [Button "Save"]=save
+
+d:
+    Save our certificate and key pair.
+
+click -> save
+
+e:
+    [Text "Manual Upload"]=upload [Text "$*EDGE_APP"]=domains [Text "in a year"]=exptime [Button "Delete"]=del
+
+d:
+    We can see the record for our newly created certificate and key pair.
+
+callout -> upload, domains, exptime, del
+
+d:
+    The certificate issuing source is manual upload.
+
+callout -> upload
+
+d:
+    And the certificate is for a single domain, !$*EDGE_APP!.
+
+callout -> domains
+
+d:
+    And it will expire in about a year.
+
+callout -> exptime
+
+d:
+    We can see the exact expiration time by hovering the mouse over it.
+
+hover -> exptime
+
+sleep 3s
+
+d:
+    We can also edit an existing Let's Encrypt certificate.
+
+e:
+    [Button "Edit"]=edit [Button "Delete"]=del
+
+click -> edit
+
+e:
+    [Link "Cancel"]=cancel [Button "Save"]
+
+d:
+    We don't make any changes here.
+
+click -> cancel
+
+d:
+    Or we can delete this certificate.
+
+e:
+    [Button "Edit"]=edit [Button "Delete"]=del
+
+click -> del
+
+e:
+    [Link "Cancel"]=cancel [Button "Delete"]
+
+d:
+    We don't want to delete it now.
+
+click -> cancel
+
+e:
+    [Text "Enable"]
+    [Toggle "Enable SSL Certificate"]=enable
+
+d:
+    We can also disable a certificate without removing it.
+
+callout -> enable
+
+e:
+    [Text /You have \d+ pending changes?/] [Link "to be released"]=rel
+
+d:
+    We need to make a new release to push out our new certificate, as always.
+
+click -> rel
+
+e:
+    [Button /Release the \d+ pending changes?/]=rel
+
+d:
+    Click on this button.
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=rel
+
+
+d:
+    Ship it!
+
+click -> rel
+
+e(3s):
+    [Text /Sync Status: \d+ \/ \d+ \(100%\)/]=note
+
+d:
+    It is done now!
+
+callout -> note
+
+d(video=edge-sync.mp4):
+    Now the new certificate has been pushed to all the gateway clusters and servers.
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient and scalable.
+
+d:
+    Then we can pick up a gateway cluster server to test our new certificate.
+
+e:
+    [Link /Gateway Clusters.*/]=clusters [Link "Global Config"]
+
+click -> clusters
+
+e:
+    [Link "aws-sfo"]=name [Text "138.68.231.133"]=ip
+
+d:
+    We choose a gateway server here near San Francisco.
+
+callout -> name
+
+d:
+    Copy its public IP address ending with 133.
+
+click -> ip
+
+term:
+    On the terminal, we can send an HTTPS request to this gateway server.
+
+        cd ~
+        curl -I --resolve 'test-edge.com:443:138.68.231.133' https://test-edge.com/
+
+    [S] It works!
+
+    We can check more details like the certificate information by passing the `-v` option.
+
+        [UP] -v 2>&1 | less[NONL]
+
+    Run this command.
+
+        [NOP]
+        [SLEEP=1.5][SP][NONL]
+
+    [H="Server certificate:" /matched cert's "test-edge\.com"/ "SSL certificate verify ok."] We can indeed see our server certificate here.
+
+    SSL certificate uploading can also be automated by OpenResty Edge's REST API. We will cover that in another video.
+
+        [SLEEP=1]q[NONL]
+        $
+
+    [S] This is what I'd love to cover today.
