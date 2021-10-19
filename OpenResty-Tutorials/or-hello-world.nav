@@ -1,0 +1,107 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/eSfYLvVQMxw
+
+term:
+    [V=browser-hello.mp4] Hi, I'm Matthew from OpenResty Inc. In this video, I'll demonstrate how to implement a "hello world" HTTP interface using OpenResty.
+
+    First of all, we make sure we are using OpenResty's nginx.
+
+        [delay=0] $ export PATH=/usr/local/openresty/nginx/sbin:$PATH
+        $ which nginx
+
+    [S] It's usually in this path.
+
+    And then we go to the home directory.
+
+        $ cd ~/
+
+    Create and switch to a directory named 'hello' for our example.
+
+        $ mkdir hello
+        $ cd hello
+
+    Create the boilerplate sub-directories for the OpenResty application.
+
+        $ mkdir logs conf
+        $ ls
+
+    Then let's create a simple nginx.conf file under the 'conf' sub-directory. Here we use vim.
+
+        vim conf/nginx.conf
+
+    Let's enable a single nginx worker process for simplicity.
+
+        i [NONL]
+        worker_processes 1;
+        [NOP]
+
+    We enable at most 1024 per-worker connections.
+
+        events {
+        worker_connections 1024;
+        }
+        [NOP]
+
+    And here we configure an HTTP server.
+
+        http {
+        server {
+
+    Listen to the 8080 port with 'reuseport' enabled.
+
+        listen 8080 reuseport;
+        [NOP]
+
+    Finally we add a root location to this server.
+
+        location / {
+
+    We set the default MIME type to text/plain.
+
+        default_type text/plain;
+
+    We embed some Lua code to emit a response with the body 'Hello World'.
+
+        content_by_lua_block { ngx.say("Hello World") }
+        }
+        }
+        }
+
+    [S] The file is now complete.
+
+    Let's save it.
+
+        [ESC][NOP]
+        :w
+
+    Quit the vim editor.
+
+        :q
+        $
+
+    Now let's test if the configuration is correct with the '-t' option.
+
+        $ nginx -p $PWD/ -t
+
+    [S] Looking good!
+
+    Now let's start this OpenResty application for real.
+
+        $ nginx -p $PWD/
+
+    And check if the nginx processes are running.
+
+        $ ps aux|grep nginx|grep -v /tmp/
+
+    [S] Nice. They are up. One master and one worker.
+
+    We can now send a test HTTP request to this server with the 'curl' command-line utility.
+
+        $ curl 'http://127.0.0.1:8080/'
+
+    [S] We're indeed getting the response body 'Hello World'.
+
+    [V=browser-hello.mp4] We can also try accessing the / URI in a web browser.
+
+    [S] As we can see, it also displays "Hello World" as expected.
