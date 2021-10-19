@@ -12,6 +12,7 @@ d:
     Let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own deployment.
 
 lang 'en'
+
 goto "https://admin.openresty.com/"
 
 e(5s):

@@ -1,0 +1,526 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/XkPlx9If6sI
+
+lang "en"
+
+d(image=edge-releases.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to demonstrate how to manage configuration versions and releases in OpenResty Edge. Our relational database used by the web console has built-in support for version control.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+goto "https://$*EDGE_ADMIN_HOST/"
+
+e:
+    [Textbox "Search domain..."]=search
+
+d:
+    We still use our continuing sample application for the !$*EDGE_APP! domain.
+
+"$*EDGE_APP\n" -> search
+
+e:
+    [Text "HTTP"] [Link /.*?$*EDGE_APP/]=app [Link /.*?HTTPS:\s*443.*/]=type [Button "Edit"]
+
+d:
+    Enter the application.
+
+click -> app
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+    [Link "Cache Purge"]
+
+d:
+    First we add a simple page rule to output a custom response body.
+
+click -> rules
+
+e:
+    [Button "New Rule"]=new-rule
+
+d:
+    Create a new page rule.
+
+click -> new-rule
+
+e:
+    [Label "Enable when"] [Toggle ""]=cond
+
+d:
+    We do not specify a condition for this rule. So it will fire unconditionally.
+
+callout -> cond
+
+e:
+    [Label "Action"]
+    [Button "Add a new action"]=new-action
+
+d:
+    Add a new action for returning a response directly.
+
+click -> new-action
+
+e:
+    [Text "Select or Search Action Types"]=types
+
+d:
+    We can search for the "Output response body" action.
+
+click -> types
+
+e:
+    [Textbox "Select or Search Action Types"]=types
+
+"output resp" -> types
+
+e:
+    [Text "Output response body"]=resp-body
+
+d:
+    Select it.
+
+click -> resp-body
+
+e:
+    [Textbox "Content Type"]=type
+    [CodeMirror "Body"]=body
+
+d:
+    Here we specify the "text/plain" Content-Type header.
+
+"text/plain" -> type
+
+press('Tab') -> type
+
+d:
+    And specify the "Hello world" response body.
+
+"Hello world!\n" -> body
+
+e:
+  [Radio "Set as an Always-Top rule"]=radio
+  [Button "Cancel"]    [Button "Create"]=create
+
+d:
+    We need to make sure that this rule always runs before other rules. Let's mark it as an Always-Top rule.
+
+click -> radio
+
+e:
+    [Checkbox "Skip any subsequent page rules when this rule matches"]=skip
+
+d:
+    We skip any subsequent rules if this rule is matched.
+
+click -> skip
+
+e:
+    [Button "Cancel"]       [Button "Create"]=create
+
+d:
+    And then create it.
+
+click -> create
+
+e:
+                     [Label "Conditions"]          [Label "Actions"]
+    [Text /\d+/]=id  [Text "Always"]=always        [Text "Rewrite"]=rewrite
+                                                   [Text "Output response body"]=output
+                                                   [Button "Preview"]=preview
+
+d:
+    We can see our page rule is already listed here.
+
+callout -> id, always, rewrite, output, preview
+
+e:
+    [Text /You have \d+ pending changes?/] [Link "to be released"]=rel
+
+#scroll up 200px
+
+ds:
+    Our new page rule is not online yet since it is still a pending change.
+
+d:
+    We can push it out by making a new configuration release.
+
+click -> rel
+
+e:
+        [Button /Clear the \d+ pending changes?/]=clear [Button /Release the \d+ pending change?/]
+
+d:
+   We could use this Clear button if we want to clear any pending changes. We don't want to clear it now.
+
+callout -> clear
+
+e:
+        [Title  "Unreleased Changes"]
+    [Label "Author"]       [Label "Change Time"]     [Label "Log"]
+                                                     [Text "Add"][Text "phases-rewrite-rules"]
+                                                     [Button "Click for details"]=details
+
+ds:
+    Before making a config release, we can check out the details of the pending changes.
+
+d:
+    Just click this button to check out the diff for the change.
+
+click -> details
+
+#scroll down 100px
+
+e:
+    [Text "Description"]=desc [Text "JSON"]=json
+    [Text /Action/]=dd
+
+d:
+    We provide a readable textual description for the changes.
+
+callout -> desc
+
+callout -> dd
+
+d:
+    And also the changes in the JSON format.
+
+click -> json
+
+e:
+    [Text "Description"] [Text "JSON"]=json
+    # [Text "{}"]=minus
+        [Text /actions/]=plus
+
+scroll down 200px
+
+callout -> json, plus
+
+scroll up 200px
+
+e:
+    [Button /Clear the \d+ pending changes?/] [Button /Release the \d+ pending changes?/]=release
+
+d:
+    Let's can make the new release now.
+
+click -> release
+
+e:
+    [Title "Confirm"]
+    [Textbox "Add a comment"]=comment
+    [Label "Release to staging nodes only"]=staging [Toggle "toggle"]=tog
+
+                        [Button "Release"]=release
+
+d:
+    You have an option to release to your own staging gateway nodes only.
+
+callout -> staging, tog
+
+d(image=staging-nodes.png):
+    In that case, this config release will have the type "Staging". We'll demonstrate this in a future video tutorial. Otherwise it will be of the type "Normal".
+
+d:
+    Add some notes or comments here to describe the release. This is optional though.
+
+"Say hello world" -> comment
+
+d:
+    Then ship it by clicking on the Release button.
+
+click -> release
+
+e:
+    [Text /Sync Status: .*?100%\)/]=progress
+
+d:
+    It is fully synchronized now.
+
+callout -> progress
+
+d(video=edge-sync.mp4):
+    Now the new page rule has been pushed to all the gateway clusters and servers.
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient and scalable.
+
+term:
+    Then on the terminal, we can send a test request to our application.
+
+        curl http://$*EDGE_APP/ [NONL]
+
+    [H="$*EDGE_APP"] The $*EDGE_APP domain is already resolved to our gateway node servers managed by OpenResty Edge.
+
+    Run it.
+
+        [NOP]
+        $ [NONL]
+
+    [H="Hello world!"] We indeed got the "Hello world" response body.
+
+e:
+    [Title "Releases"]
+
+d:
+    Back to the Releases page, we can browse all the release history in this table.
+
+scroll down 300px
+
+e:
+    [Label "Release Creator"]=creator [Label "Operation Type"]=op_type [Label "Release Type"]=rel_type [Label "Released Time"]=rel_time [Label "Author of Last Change"] [Label "Comment"] [Label "Log"]
+
+d:
+    Here we can see who authored each release.
+
+callout -> creator
+
+d:
+    And also what time the release was made.
+
+callout -> rel_time
+
+d:
+    You can check out the operation type, which can be either a "Release" or a "Rollback".
+
+callout -> op_type
+
+d:
+    The Release type can be either a Normal one or Staging one.
+
+callout -> rel_type
+
+e:
+    [Label "Comment"]                   [Label "Log"]
+    [Text "Say hello world"]
+                                        [Button "Click for details"]=details        [Button "Revert this release"]
+
+d:
+    We also can expand the details of each historical release here.
+
+click -> details
+
+#scroll down 100px
+
+e:
+    [Text /text\/plain/]=log
+
+d:
+    It still has the textual description.
+
+callout -> log
+
+scroll up 300px
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+    [Link "Cache Purge"]
+
+d:
+    Let's edit our new page rule a bit. Go back to the page rules page.
+
+click -> rules
+
+e:
+    [Label "Conditions"]          [Label "Actions"]
+    [Text "Always"]               [Text "Rewrite"]                                    [Button "Edit"]=edit
+                                  [Text "Output response body"]
+
+d:
+    Edit this rule.
+
+click -> edit
+
+e:
+    [Textbox "Content Type"]
+    [CodeMirror "Body"]=body
+
+d:
+    Let's change the response body to "Happy hacking!"
+
+"Happy hacking!\n" -> body
+
+e:
+    [Button "Cancel"]       [Button "Save"]=save
+
+d:
+    Save it.
+
+click -> save
+
+scroll up 300px
+
+e:
+    [Text /You have \d+ pending changes?/]=prefix [Link "to be released"]=rel
+
+ds:
+    We have a new pending change again.
+
+callout -> prefix, rel
+
+d:
+    Make another new config release.
+
+click -> rel
+
+e:
+    [Title "Unreleased Changes"]
+                                    [Label "Log"]
+                                    [Button "Click for details"]=details
+d:
+    Check the details of the pending change again.
+
+click -> details
+
+#scroll down 100px
+
+e:
+    [Text /body: Hello world!/]=body_hello
+    [Text /body: Happy hacking!/]=body_happy
+
+d:
+    It shows that we replaced the "Hello world" message with "Happy hacking".
+
+callout -> body_hello, body_happy
+
+e:
+    [Button /Clear the \d+ pending change?/] [Button /Release the \d+ pending change?/]=release
+
+d:
+    Let's release this pending change.
+
+click -> release
+
+e:
+    [Title "Confirm"]
+    [Textbox "Add a comment"]=comment
+
+                        [Button "Release"]=release
+
+d:
+    This time we add a comment "Say happy hacking".
+
+"Say happy hacking" -> comment
+
+d:
+    Ship it.
+
+click -> release
+
+e:
+    [Text /Sync Status: .*?100%\)/]=msg
+
+ds:
+    A new release is pushed out.
+
+callout -> msg
+
+scroll down 200px
+
+e:
+    [Title "Releases"]
+    [Label "Release Creator"][Label "Operation Type"]        [Label "Comment"]
+                             [Text "Release"]                [Text "Say happy hacking"]=r2    [Button "Revert this release"]
+                             [Text "Release"]                [Text "Say hello world"]=r1      [Button "Rollback to this release"]
+
+d:
+    The release history is also updated.
+
+callout -> r1, r2
+
+term:
+    Let's send a test request on the terminal again.
+
+        curl http://$*EDGE_APP/ [NONL]
+
+    Run it.
+
+        [NOP]
+        $ [NONL]
+
+    [H="Happy hacking!"] The response body is indeed changed to "Happy hacking".
+
+e:
+    [Title "Releases"]
+    [Label "Release Creator"][Label "Operation Type"]        [Label "Comment"]
+    [Text "test-user"]=user  [Text "Release"]=type           [Text "Say happy hacking"]=rel [Button "Revert this release"]=revert
+                             [Text "Release"]                [Text "Say hello world"]       [Button "Rollback to this release"]
+
+d:
+    Next, say, we want to revert the latest config release.
+
+callout -> user, type, rel, revert
+
+d:
+    Just click on this "Revert this release" button.
+
+click -> revert
+
+e:
+    [Title "Confirm"]
+
+                    [Button "Revert"]=rev
+
+d:
+    Confirm to revert.
+
+click -> rev
+
+scroll up 400px
+
+e:
+    [Text /Sync Status: .*?100%\)/]=msg
+
+d:
+    The release revert is now pushed out to all the gateway servers.
+
+callout -> msg
+
+e:
+    [Title "Releases"]
+        [Label "Operation Type"]        [Label "Comment"]
+        [Text "Rollback"]=rollback                                          [Button "Revert this release"]
+        [Text "Release"]                [Text "Say happy hacking"]          [Button "Rollback to this release"]
+        [Text "Release"]                [Text "Say hello world"]            [Button "Rollback to this release"]
+
+d:
+    Now you see the latest Operation log has the type "Rollback".
+
+callout -> rollback
+
+term:
+    We test it out again on the terminal.
+
+        curl http://$*EDGE_APP/ [NONL]
+
+    Run it.
+
+        [NOP]
+        $ [NONL]
+
+    [H="Hello world!"] It indeed turns back to "Hello world" now.
+
+e:
+    [Title "Releases"]
+
+                            [Label "Operation Type"]        [Label "Comment"]
+                            [Text "Rollback"]                                                   [Button "Revert this release"]
+    [Text "test-user"]=user [Text "Release"]                [Text "Say happy hacking"]          [Button "Rollback to this release"]=rollback
+    [Text "test-user"]      [Text "Release"]                [Text "Say hello world"]            [Button "Rollback to this release"]
+
+d:
+    We can rollback to an even older release.
+    Say, we want to rollback to the second last release this time.
+
+callout -> user, rollback
+
+d:
+    We could just click on this "Rollback to this release" button. Feel free to try it out yourself.
+
+callout -> rollback
+
+ds:
+    This is what I'd like to cover today.
