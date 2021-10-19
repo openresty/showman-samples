@@ -1,0 +1,142 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/L1c7aw4mSOo
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. In this video, I'll demonstrate how to use the `resty` command-line utility shipped with OpenResty.
+
+        $ cd ~
+        $ export PATH=/usr/local/openresty/bin:$PATH
+        $ which resty
+
+    [S] It's usually in this path.
+
+    We can check its version number with the `-V` option.
+
+        $ resty -V
+
+    If you install OpenResty using our pre-built binary packages, then you should install the `openresty-resty` package.
+
+        $ dnf list installed openresty-resty
+
+    [S] Because it's not in the `openresty` main package.
+
+    It's much easier to do "hello world" using a `resty` command, for example.
+
+        $ resty -e 'print("Hello World")'
+
+    [S] Note the -e option.
+
+    Or run a Lua script on the terminal.
+
+        $ echo 'print("Hello World")' > hello.lua
+        $ cat hello.lua
+        $ resty hello.lua
+
+    [S] So it is also a great way to write new command-line applications using OpenResty.
+
+    Nonblocking I/O is also possible here.
+
+        $ time resty -e 'ngx.sleep(1) ngx.say("done")'
+
+    Let's connect to openresty.com's 443 port using the cosocket API.
+
+        $ resty -e 'local sock = ngx.socket.tcp() print(sock:connect("openresty.com", 443))'
+
+    Or using light threads.
+
+        $ resty -e 'ngx.thread.wait(ngx.thread.spawn(function () print("in thread!") end))'
+
+    You can also use Lua modules easily. Let's create a `test` mdoule.
+
+        $ mkdir lua/
+        vim lua/test.lua
+        i [NONL]
+        local _M = {}
+        [NOP]
+        function _M.hello() print("Hello") end
+        [NOP]
+        return _M
+        [ESC]
+        :wq
+        $
+
+    And then we use the `-I` option to add the current working directory to the Lua module search paths.
+
+        $ resty -I lua/ -e 'require "test".hello()'
+
+    Without the `-I` option, it won't find it.
+
+        [FAIL] $ resty -e 'require "test".hello()'
+
+    [S] This is because the current working directory is not in the Lua module search paths by default.
+
+    Standard Lua modules can be loaded directly, like `resty.shell`.
+
+        $ resty -e 'local ok, stdout = require "resty.shell".run([[echo ok]]) print(stdout)'
+
+    [S] This module is for running abitrary shell commands nonblockingly.
+
+    We can also define lua shared memory dictionaries via the `--shdict` option.
+
+        $ resty --shdict 'dogs 10m' -e 'print(ngx.shared.dogs:set("age", 11))'
+
+    Multiple shared dictionaries can be defined this way.
+
+        $ resty --shdict 'dogs 7m' --shdict 'cats 5m' -e 'print(ngx.shared.dogs, " ", ngx.shared.cats)'
+
+    It can also be handy to inject custom nginx configuration snippets.
+
+        $ resty --http-conf 'lua_regex_match_limit 102400;' -e 'print "ok"'
+
+    [S] We can also play with LuaJIT's JIT compiler.
+
+    Let's create a hot Lua script.
+
+        $ echo 'local a = 0 for i = 1, 1e8 do a = a + 1 end print(a)' > bench.lua
+        $ cat bench.lua
+
+    And then disable the JIT compiler altogether.
+
+        $ time resty -joff bench.lua
+
+    For comparison, we can check how much faster when we enable the JIT compiler.
+
+        $ time resty bench.lua
+
+    Or we can check the compiled Lua code paths, or "traces", with the `-jv` option.
+
+        $ resty -jv bench.lua
+
+    Or with even more details like the compiled bytecode dump, IR code dump, as well as machine code dump.
+
+        resty -jdump bench.lua | less
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] q [NONL]
+        $
+
+    You can always find all the supported features via the `-h` option.
+
+        resty -h | less
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] q [NONL]
+        $
+
+    Or refer to its documentation via the `restydoc` utility.
+
+        restydoc resty-cli
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] [SP] [NOP]
+        [SLEEP=1] q [NONL]
+        $
+
+    If you install `openresty` through our pre-built binary packages, then you should install the `openresty-doc` or `openresty-restydoc` package.
+
+        $ dnf list installed openresty-doc
+
+    [S] We will have a closer look at the `restydoc` utility in another dedicated video tutorial.
