@@ -1,0 +1,367 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/i_n53z_zE3A
+
+[0]
+
+[I=showman.png] Hi, I'm Matthew from OpenResty Inc. Today I'd show you how to generate a complete video that demonstrates the Google Search website.
+
+[I=showman-arch.png] The video will be made by our OpenResty Showman product from a screenplay file.
+
+Enter the Google Chrome web browser, and open the OpenResty Showman extension. I assume this extension is already installed.
+
+[00:04.17/30]
+
+[S] Now we are at the Login page of Showman. Assume you have already registered an account on our OpenResty.com website, and activated the Showman services.
+
+Use the OpenResty.com account to sign in.
+
+[00:08.12/30]
+
+Use our Google account to login. Choosing which type of accounts here depends on how you registered on our website.
+
+[00:13.14/30]
+
+Signing in...
+
+[00:22.07/30]
+
+Enter the screenplay list page of OpenResty Showman.
+
+[00:22.11/30]
+
+[S] All of our videos are automatically generated from these screenplay files. The machine will direct, act, shoot and dub itself. We humans are the screenwriter.
+
+Click this button to create a new screenplay file.
+
+[00:26.13/30]
+
+Enter the file name, "google".
+
+[00:28.12/30]
+
+Save the file.
+
+[00:32.25/30]
+
+[S] Now we are at the editor interface of the screenplay file. Screenplay files are written in the Nav language (or navlang). Don't worry, the Nav language is a very simple documentation-like language. It's not a programming language.
+
+First enter letter "d" and a colon. It means creating an asynchronous narrative text. The letter "d" is for "description".
+
+[00:36.08/30]
+
+On the next line, we enter the narrative text: "let's go to the Google home page".
+
+[00:44.02/30]
+
+[S] Note the indentation at the beginning of the line. Here the editor automatically inserts an indentation for us.
+
+Now use the `goto` command to visit the Google URI. This line cannot have any indentation though.
+
+[00:51.13/30]
+
+[S] The "d" narrative section and the `goto` command operate at the same time. That is, while the narrative is being spoken, the URI is being typed into the address bar of the web browser. So such "d" narratives are said to be "asynchronous". Now let's run and debug this screenplay locally.
+
+Click at this button to run from the beginning of the screenplay. Remember to observe how the browser window on the right changes.
+
+[00:58.20/30]
+
+[S] We see that the right-hand-side window indeed opens the Google home page automatically.
+
+Let's continue with our screenplay.
+
+[00:59.22/30]
+
+Now enter letter "e" and a colon. This indicates matching a region on the target web page with our patterns. The letter "e" is for "elements", meaning a group of web page elements.
+
+[01:00.15/30]
+
+[S] On the next line, enter the descriptions of the page elements we concern about.
+
+First enter element pattern `Textbox`, representing a text-box on the page.
+
+[01:02.26/30]
+
+[S] We hope to match the big search box on the right-hand-side window.
+
+The search box itself has no text labels, so we use two successive double-quotes to indicate that its label is empty.
+
+[01:04.05/30]
+
+[S] Now the big search box is described.
+
+We give this search box a name, "query". So that we can reference it later.
+
+[01:06.11/30]
+
+Then we describe the left-hand-side button right below the search box, "Google Search".
+
+[01:13.22/30]
+
+[S] Note that we use the element type, "Button", to match a button on the page.
+
+Similarly, we specify the pattern for the button "I'm Feeling Lucky" on the right.
+
+[01:20.01/30]
+
+[S] Note how we position the element patterns to mimic the element visual layout shown on the web page.
+
+Next we add an asynchronous narrative, "let's enter openresty as the search query".
+
+[01:28.08/30]
+
+Then enter the string "openresty" into the search box named `query`. The `query` name was just defined above.
+
+[01:33.16/30]
+
+[S] Note the arrow operator. It means to enter text into the specified page element.
+
+Then enter an asynchronous narrative, "search now".
+
+[01:40.03/30]
+
+Now actually send the Enter key to the search box.
+
+[01:46.19/30]
+
+[S] Note that we use the function `press` here, meaning sending special keyboard keys. The Enter key is also called the Return key on some keyboards.
+
+Then use the second to the left button to do an incremental run. That is, continuing from the last screenplay line we stopped execution previously.
+
+[01:53.01/30]
+
+[S] We can see OpenResty Showman does smart matching against web pages according to the screenplay.
+
+The matching engine uses visual information of the web page and machine-learning algorithms to find the best match.
+
+[01:54.01/30]
+
+It automatically inputs the search query according to the screenplay.
+
+[01:58.06/30]
+
+Then automatically press the Enter or Return key.
+
+[02:01.21/30]
+
+[S] Now the execution has successfully reached the end of the current screenplay.
+
+Let's input more screenplay contents.
+
+[02:03.17/30]
+
+Enter a new group of page element patterns for the current page.
+
+[02:04.09/30]
+
+We hope to match a hyperlink.
+
+[02:05.18/30]
+
+This hyperlink's label should match this regular expression.
+
+[02:12.07/30]
+
+[S] The dot asterisk question mark part matches arbitrary sub-strings. So any string labels with the "OpenResty" prefix and the "Official Site" suffix will match this pattern.
+
+Also, we give this Link a name, say, "title". It's also for future references.
+
+[02:13.20/30]
+
+Then enter a new narrative paragraph, "we can see our official website is near the top".
+
+[02:22.18/30]
+
+We use the `callout` action to just highlight the link named "title" we defined earlier. Note that we don't actually click on it.
+
+[02:28.13/30]
+
+We can add one more narrative.
+
+[02:38.07/30]
+
+Then add the `scroll down` command to automatically scroll down 500 pixels.
+
+[02:43.14/30]
+
+Sleep for 500 milliseconds.
+
+[02:45.24/30]
+
+And then scroll down again, but by 700 pixels this time.
+
+[02:49.27/30]
+
+Do a new round of incremental execution again.
+
+[02:57.02/30]
+
+[S] We can see the highlight or "callout" effect on the link.
+
+Then the right window scrolls down a bit.
+
+[02:59.15/30]
+
+Sleeps a bit and then scrolls down a bit more.
+
+[03:00.18/30]
+
+Finishing execution.
+
+[03:02.27/30]
+
+[S] Let's add even more screenplay text.
+
+Matching the "10" link for page 10.
+
+[03:07.28/30]
+
+And then the "Next" link to the right.
+
+[03:11.15/30]
+
+Give it the name "next" for later references.
+
+[03:14.02/30]
+
+Add a new asynchronous narrative paragraph, "goto the next page".
+
+[03:18.07/30]
+
+Then click the link named "next" just defined above.
+
+[03:21.26/30]
+
+[S] Note here we use the `click` event. The arrow operator means sending this event to the element on the right hand side.
+
+Click on the incremental execution button again. It'll run from the last location we left. Note how the right-hand-side window is changing.
+
+[03:32.17/30]
+
+We continue with the screenplay writing.
+
+[03:36.17/30]
+
+Match the page "1" link near the bottom of the page.
+
+[03:38.17/30]
+
+Then match the text "2" for the current page. It is to the right of the page "1" link.
+
+[03:41.14/30]
+
+Give it the name "cur".
+
+[03:42.05/30]
+
+Then goes the page "3" link to the right.
+
+[03:44.05/30]
+
+Callout the element, "cur".
+
+[03:49.05/30]
+
+Time to add the closing narrative.
+
+[03:50.25/30]
+
+[S] Note that we use a "ds" section here instead of the single letter "d". The first letter "d" still means "description". And the following "s" letter means "synchronous". It dictates pausing any operations on the web page and speaking the narrative exclusively. It's usually for pausing and describing the current state of the web page.
+
+In this closing, we say, "we are on the second page now".
+
+[03:55.12/30]
+
+And also some more text.
+
+[04:01.28/30]
+
+[S] The "ds" section is not just for closing words. It can also be used at the beginning or in the middle of the screenplay document. Whenever we need to pause the operations and say something, we can use "ds".
+
+Do an incremental run again.
+
+[04:13.01/30]
+
+[S] It still works as expected.
+
+Now the screenplay is complete now. And it also passes the local test.
+
+[04:15.25/30]
+
+[I=showman-arch.png] It's time to generate a video from this screenplay file on our cloud.
+
+Let's click this camera button to enter the video generator page.
+
+[04:19.06/30]
+
+[S] Note the right-hand-side window already loads the video generator.
+
+Then click the "VB`Record` video" button here.
+
+[04:22.25/30]
+
+[S] In this dialogue box, we can configure a lot of parameters for the video. Like the computer voice for the narratives, user-uploaded background music, or user's own opening and closing video clips.
+
+We'd change the voice to Salli, a female US voice. By the way, I am Matthew already, hence a different voice here. Otherwise you cannot tell who is who.
+
+[04:26.03/30]
+
+Click on the "VB`Record`" button.
+
+[04:30.01/30]
+
+It starts recording the video on OpenResty Showman's cloud.
+
+[04:33.25/30]
+
+We can watch the recording process on the cloud in real time through that small window. It is the remote desktop on a cloud server. Indeed, it's automatically operating on the Google Search site.
+
+[04:54.29/30]
+
+Start synthesizing audio and subtitles with timing information.
+
+[04:57.04/30]
+
+Start splitting and editing the original recorded video.
+
+[05:01.25/30]
+
+Finally, merging the audio, video, and subtitle streams.
+
+[05:04.26/30]
+
+The video is now ready! The version of the 360p resolution is already being loaded into the video player window on the right.
+
+[05:07.13/30]
+
+Click on the play button to preview the video. Note that the generated subtitles are also displayed.
+
+[05:43.03/30]
+
+[S] Now the generated video is played to the end.
+
+We can click on this button to download this 360p video.
+
+[05:46.20/30]
+
+[S] It is downloaded to the local file system now.
+
+We can also click on this button to generate the 720p HD video. Generating higher resolutions does not need to record from scratch again. But it still takes a little while.
+
+[05:56.22/30]
+
+[S] Now the 720p video version is generated. And the original "generate" button has become a "download" button.
+
+Click on the 720p download button.
+
+[06:00.19/30]
+
+[S] The MP4 file for the 720p video is now downloaded.
+
+We can also generate and download even higher resolutions, like 1080p and 1440p.
+
+[06:06.04/30]
+
+Finally, we can download the subtitle file in the SRT format. Almost all video websites accept this subtitle format. Like YouTube, Vimeo, and Bilibili.
+
+[END] [S] In fact, the video you're watching right now was generated by OpenResty Showman as well. This is what I'd like to cover today.

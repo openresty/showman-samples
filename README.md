@@ -31,7 +31,7 @@ OpenResty Edge
 
 [OpenResty-Edge/](OpenResty-Edge/) is for our [OpenResty Edge](https://www.youtube.com/playlist?list=PLlR4WakbzQp3blQY5pLBHhNzR2EsEWiJK) YouTube playlist.
 
-The samples in this categoray mostly interact with complex web applications and web pages. But they may still contain some terminal or command-line interactions.
+The samples under this directory mostly interact with complex web applications and web pages. But they may still contain some terminal or command-line interactions.
 
 It contains the following screenplay files:
 
@@ -50,7 +50,7 @@ OpenResty Tutorials
 
 [OpenResty-Tutorials/](OpenResty-Tutorials/) is for our [OpenResty Tutorials](https://www.youtube.com/playlist?list=PLlR4WakbzQp0iUvHwJeBcG5MKWgGa_ahU) YouTube playlist.
 
-The samples in this categoray mostly interact with the terminal or command-line, including interations with complex terminal applications like `less` and `vim`.
+The samples under this directory mostly interact with the terminal or command-line, including interations with complex terminal applications like `less` and `vim`.
 
 It contains the following screenplay files:
 
@@ -70,7 +70,14 @@ It contains the following screenplay files:
 OpenResty Showman
 -----------------
 
-`OpenResty-Showman/` is for our [OpenResty Showman](https://www.youtube.com/playlist?list=PLlR4WakbzQp14ovGVZCtTKdfX3u4u7PNR) YouTube playlist.
+[OpenResty-Showman/](OpenResty-Showman/) is for our [OpenResty Showman](https://www.youtube.com/playlist?list=PLlR4WakbzQp14ovGVZCtTKdfX3u4u7PNR) YouTube playlist.
+
+Most of the samples under this directory use the `Narrative` language to add narrative voices and subtitles to manually-recorded videos. Some use [navlang](https://doc.openresty.com/en/navlang/) instead.
+
+It contains the following screenplay files:
+
+* Screenplay [showman-google.nar](OpenResty-Showman/showman-google.nar) is for video [How to Auto-Generate Demo Videos for Google Search from Screenplay Docs (via OpenResty Showman)](https://youtu.be/i_n53z_zE3A).
+* Screenplay [showman-baidu.nar](OpenResty-Showman/showman-baidu.nar) is for video [Auto-Generate Demo Videos for Baidu Search from Screenplay Documents (in Chinese)](https://youtu.be/y_g6B4aRc5o).
 
 [Back to TOC](#table-of-contents)
 
