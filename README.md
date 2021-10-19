@@ -29,7 +29,11 @@ The first-level directory names correspond to our Youtube channel's playlists:
 OpenResty Edge
 --------------
 
-[OpenResty-Edge/](OpenResty-Edge/) is for our [OpenResty Edge](https://www.youtube.com/playlist?list=PLlR4WakbzQp3blQY5pLBHhNzR2EsEWiJK) YouTube playlist. It contains the following screenplay files:
+[OpenResty-Edge/](OpenResty-Edge/) is for our [OpenResty Edge](https://www.youtube.com/playlist?list=PLlR4WakbzQp3blQY5pLBHhNzR2EsEWiJK) YouTube playlist.
+
+The samples in this categoray mostly interact with complex web applications and web pages. But they may still contain some terminal or command-line interactions.
+
+It contains the following screenplay files:
 
 * Screenplay [edge-new-proxy.nav](OpenResty-Edge/edge-new-proxy.nav) is for video [Set up a Simplest Reverse Proxy and Load Balancer with OpenResty Edge](https://youtu.be/fgtiOYrdsE4).
 * Screenplay [edge-cache-rules.nav](OpenResty-Edge/edge-cache-rules.nav) is for video [Enable HTTP Cache in OpenResty Edge](https://youtu.be/g8H0HYM3AdM).
@@ -45,6 +49,10 @@ OpenResty Tutorials
 -------------------
 
 [OpenResty-Tutorials/](OpenResty-Tutorials/) is for our [OpenResty Tutorials](https://www.youtube.com/playlist?list=PLlR4WakbzQp0iUvHwJeBcG5MKWgGa_ahU) YouTube playlist.
+
+The samples in this categoray mostly interact with the terminal or command-line, including interations with complex terminal applications like `less` and `vim`.
+
+It contains the following screenplay files:
 
 * Screenplay [or-hello-world.nav](OpenResty-Tutorials/or-hello-world.nav) is for video [Hello World HTTP Example in OpenResty/Nginx](https://youtu.be/eSfYLvVQMxw).
 * Screenplay [or-lua-module.nav](OpenResty-Tutorials/or-lua-module.nav) is for video [Write Your Own Lua Modules in OpenResty/Nginx Applications](https://youtu.be/vfYxOMl5LVY).
