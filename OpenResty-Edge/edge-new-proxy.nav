@@ -1,3 +1,5 @@
+# generated video is here: https://youtu.be/fgtiOYrdsE4
+
 d(image=edge-proxy4.png):
     Hi, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to setup the simplest reverse proxy and load balancer in OpenResty Edge.
 
