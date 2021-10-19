@@ -1,0 +1,563 @@
+d(image=edge-proxy4.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to setup the simplest reverse proxy and load balancer in OpenResty Edge.
+
+d(image=edge-proxy-admin4.png):
+    We manage all the gateway server nodes and their configurations in a central place, the Edge Admin web console.
+
+d:
+    Let's go to a web console of OpenResty Edge. This is our sample deployment of the console. Every user would have their own deployment.
+
+lang "en"
+goto "https://admin.openresty.com"
+
+elems(?):
+    [Title "Login"]
+    [Textbox "User Name"]=user
+    [Textbox "Password"]=pass
+    [Checkbox "Remember Me"]=rem
+    [Button "Login"]=login
+
+found:
+    d:
+        Let's login using our user name and password.
+
+    "$*EDGE_USER" -> user
+    "$*EDGE_PASS" -> pass
+
+    ds:
+        Other authentication methods are also configurable.
+
+    d:
+        Sign in now.
+
+    click -> rem
+    click -> login
+
+elems:
+    [Title "Applications"]
+                                        [Button "New Application"]
+
+d:
+    We're now at the application list page. There are many existing applications we created previously. Each application is like a virtual host or virtual server in the same gateway.
+
+sleep 200ms
+
+scroll down 400px
+sleep 200ms
+
+scroll down 400px
+sleep 200ms
+
+elems:
+    [Title "Applications"]
+    [Text "HTTP/HTTPS"]=http_type
+                                        [Button "New Application"]=new_app
+
+d:
+    We are on the list page for HTTP and HTTPS applications.
+
+callout -> http_type
+
+d:
+    Here we'd create a new application.
+
+click -> new_app
+
+elems:
+    [Textbox "Domain"]=domain
+    [Button "Add a new (wildcard) domain"]=new_domain
+
+d:
+    We assign a single domain, `$*EDGE_APP`, to this application.
+
+#scroll up 100px
+
+"$*EDGE_APP" -> domain
+
+d:
+    We may add more domains, including wildcard domains.
+
+callout -> new_domain
+
+e:
+    [Label "HTTP port"] [Text "80"]=port80
+
+d:
+    We only care about the 80 port in this example.
+
+callout -> port80
+
+elems:
+    [Link "Cancel"]            [Button "Create"]=create
+
+d:
+    Let's create this application!
+
+click -> create
+
+elems:
+    [Link "Page Rules"]
+    [Link "Upstreams"]=up
+    [Link "Cache Purge"]
+
+d(sync):
+    Now we are inside this new application. It's empty.
+
+d:
+    Let's go to the Upstreams page.
+
+click -> up
+
+sleep 100ms
+
+mouse right 600px
+
+elems:
+    [Button "New Upstream"]=new_up
+
+d(sync):
+    Obviously, we currently have no upstreams defined.
+
+d:
+    Create a new upstream for our backend servers.
+
+click -> new_up
+
+elems:
+    [Textbox "Upstream Name"]=name
+    [Text "Protocol"] [Radio "HTTP"]=http
+                      [Radio "HTTPS"]=https
+
+d:
+    We give this upstream a name, say, `my_backend`.
+
+"my_backend" -> name
+
+d:
+    For simplicity, we just use the HTTP protocol here.
+
+callout -> http
+
+d:
+    We may always want to use HTTPS for the real thing.
+
+callout -> https
+
+d:
+    Here we need the backend server's IP address.
+
+e:
+    [Textbox "Host"]=host
+    [Textbox "Port"]=port
+    [Button "Add a new upstream server"]
+
+callout -> host
+
+d:
+    We've already prepared a sample backend server at this IP address.
+
+new tab backend_tab
+
+goto "http://54.213.103.191/"
+
+e:
+    [Text /.*?Welcome to OpenResty!.*/]
+
+d(sync):
+    It simply returns the default index page of the open source OpenResty server software.
+
+d(image=different-edge-backends2.png):
+    It could be anything that speaks HTTP.
+
+d:
+    We can now fill out the host field for the backend server.
+
+close tab backend_tab
+
+e:
+    [Textbox "Host"]=host
+    [Textbox "Port"]=port
+    [Button "Add a new upstream server"]=add_server
+
+"54.213.103.191" -> host
+
+d:
+    We keep the 80 port intact.
+
+callout -> port
+
+d:
+    We may add more servers to this upstream in the future.
+
+callout -> add_server
+
+e:
+    [Button "Save"]=save
+
+d:
+    Now save this upstream.
+
+click -> save
+
+e:
+    [Text "my_backend"]=name [Text "1"]
+
+d:
+    We can see this `my_backend` upstream is already there.
+
+callout -> name
+
+d:
+    Now let's create a new page rule to actually make use of this upstream.
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+    [Link "Cache Purge"]
+
+click -> rules
+
+sleep 300ms
+
+mouse right 550px
+
+e:
+    [Button "New Rule"]=new_rule
+
+d(sync):
+    We currently don't have any page rules defined.
+
+d:
+    Create a new page rule.
+
+click -> new_rule
+
+e:
+    [Label "Enable when"]=label [Toggle ""]=cond
+
+d:
+    For this page rule, we do not specify a condition. This way it will apply to all incoming requests.
+
+callout -> label, cond
+
+d:
+    We could, however, limit this proxy page rule to certain requests only.
+
+click -> cond
+
+sleep 100ms
+
+d:
+    We disable the condition again.
+
+click -> cond
+
+sleep 200ms
+
+e:
+    [Label "Proxy"] [Toggle ""]=proxy
+
+d:
+    Let's add a proxy target here.
+
+click -> proxy
+
+e:
+    [Label "Proxy to upstream"] [Text "Please select"]=up
+    [Button "Add a new upstream target"]
+
+d:
+    Let's choose an upstream.
+
+click -> up
+
+sleep 500ms
+
+mouse right 600px
+
+e:
+    [Text "my_backend"]=my_backend
+    [Text "aws singapore (global)"]=aws
+    [Text "aws singapore domain (global)"]=aws2
+    [Text /http - proxy -host.*/]=last
+
+d:
+    Here we have our newly created upstream present.
+
+callout -> my_backend
+
+d:
+    We also have some pre-defined global upstreams. They can be reused by all the applications including this one.
+
+callout -> aws, aws2, last
+
+d:
+    We select our `my_backend` upstream.
+
+click -> my_backend
+
+sleep 300ms
+
+mouse right 600px
+
+e:
+    [Label "Balancing policy"]=policy [Text "Round robin"]=rr
+
+ds:
+    Our upstream has only one server.
+
+d:
+    So the balancing policy does not really matter here.
+
+callout -> policy, rr
+
+e:
+    [Label "Balancing policy"] [Text "Round robin"]=rr
+
+d:
+    We'd just keep the default round robin policy.
+
+callout -> rr
+
+d:
+    We may also want to enable caching of the responses. We'll cover this topic in another video.
+
+e:
+    [Label "Cache"]=label [Toggle ""]=cache
+
+callout -> label, cache
+
+#e:
+    #[Label "Cache key component"]=key
+
+#d:
+    #We don't enable caching this time.
+
+#e:
+    #[Label "Cache"] [Toggle ""]=cache
+
+#click -> cache
+
+#sleep 100ms
+
+d:
+    Finally, create this rule for real.
+
+e:
+    [Link "Cancel"]            [Button "Create"]=create
+
+click -> create
+
+sleep 100ms
+
+e:
+    [Text "Always"]=cond [Text "Proxy"]=title
+                    [Text "my_backend"]=backend
+                    [Text "Balancing policy: Round Robin"]=rr
+
+d:
+    We can see the proxy page rule is already listed on the page rule list.
+
+callout -> cond, title, backend, rr
+
+e:
+    [Text "You have 2 pending changes"]=pending [Link "to be released"]=rel
+
+d:
+    The last step is to make a new configuration release. It will push out our pending changes to all our gateway servers.
+
+callout -> pending
+
+d:
+    Let's click on this link to make a new release.
+
+click -> rel
+
+e:
+    [Text "clusters"]
+    [Button "Click for details"]=chg
+
+d(sync):
+    We have a chance to review our changes before pushing them out.
+
+d:
+    This is our first change.
+
+click -> chg
+
+sleep 300ms
+
+mouse right 550px
+
+e:
+    [Text /.*?\bName: my_backend\b.*/]=diff
+
+d:
+    It is our addition of the `my_backend` upstream.
+
+callout -> diff
+
+e:
+    [Text "phases-rewrite-rules"]
+    [Button "Click for details"]=chg
+
+d:
+    This is our second change.
+
+click -> chg
+
+sleep 300ms
+
+mouse right 600px
+
+e:
+    [Text /.*?\bID: \d+.*?With no conditions.*/]=diff
+
+callout -> diff
+
+d(sync):
+    This is indeed our proxy page rule.
+
+d:
+    Now we make a release to all our gateway servers.
+
+e:
+    [Button "Release the 2 pending changes"]=rel
+
+click -> rel
+
+e:
+    [Button "Cancel"]        [Button "Release"]=rel
+
+d:
+    Ship it!
+
+click -> rel
+
+e(5s):
+    [Text /Sync Status: .*?\%\)/]=sync
+
+d:
+    We can watch the configuration synchronization progress at real time. It is pushed out to the whole gateway network.
+
+callout -> sync
+
+e(4s):
+    [Text /Sync Status: .*?100%\)/]=progress
+
+ds:
+    Now it is fully synchronized. As we can see, this sample deployment has 13 servers in the gateway network.
+
+d(video=edge-sync.mp4):
+    We do incremental config synchronization across the whole network.
+
+d(image=req-sync4.png):
+    We live-update config on the request level. None of the application-level configuration changes require server reload, restart, or binary upgrade. So it is very scalable even when you have many different users making frequent releases.
+
+d:
+    We can also check all the gateway servers grouped by clusters.
+
+e:
+    [Link /Gateway Clusters.*/]=clusters [Link "Global Config"] [Link "Help"]
+
+click -> clusters
+
+e:
+    [Link "aliyun-beijing"]
+
+d:
+    This is just our sample deployment around the world.
+
+sleep 200ms
+
+scroll down 300px
+
+sleep 200ms
+
+scroll down 300px
+
+d(image=edge-node-world4.png):
+    Our users are free to deploy their gateway servers anywhere they like. Or spanning different clouds and hosting services.
+
+d:
+    This column shows the configuration synchronization status for each gateway server.
+
+e:
+    [Text "Sync'd Nodes"]=col
+
+callout -> col
+
+scroll down 300px
+
+sleep 200ms
+
+e:
+    [Text "aws-sfo"]=sfo [Text "138.68.231.133"]=ip
+
+d:
+    We can test a gateway server near San Francisco here.
+
+callout -> sfo
+
+d:
+    Its public IP address is this.
+
+click -> ip
+
+sleep 200ms
+
+ds:
+    We copy this IP address to test this server directly.
+
+#shell:
+    #curl -H 'Host: $*EDGE_APP' http://138.68.231.133
+
+term:
+    On the terminal, we can use `curl` to test this San Francisco gateway server.
+
+        curl -sS -H 'Host: test-edge.com' 'http://138.68.231.133/' | less [NONL]
+
+    [H="'Host: test-edge.com'"] Note that we specify the `Host` request header. This is because the same server is serving many different virtual hosts.
+
+    Send the request.
+
+        [NOP]
+        [SLEEP=1.5] [SP] [NOP]
+
+    [H="Welcome to OpenResty!"] It works as expected! We got the default OpenResty index page just like accessing the backend server directly.
+
+    We can check the response header too via the `-I` option of `curl`.
+
+        [SLEEP=1] q [NONL]
+        $
+        $ curl -I -H 'Host: test-edge.com' 'http://138.68.231.133/'
+
+    [H=/Date: .*? GMT/ /Last-Modified: .*? GMT/ "Cache-Status: BYPASS"] There are some headers created by the OpenResty Edge gateway software.
+
+    Alternatively, we could bind the IP address to the host name in this local `/etc/hosts` file.
+
+        $ cat /etc/hosts
+
+    [H="/etc/hosts"] Then we'll be able to point a web browser to this domain directly.
+
+    For the real setup, we should add the gateway server IP addresses to our DNS name servers.
+
+        $ dig test-edge.com
+
+    [H="ANSWER: 0"] Here we haven't configured this domain's DNS records yet. We'll demonstrate it in another video.
+
+d:
+    OpenResty Edge can also work as an authoritative DNS server network at the same time.
+
+e:
+    [Link "Applications"] [Link "Dashboard"] [Link "DNS"]=dns
+
+click -> dns
+
+sleep 200ms
+
+e:
+    [Link "openresty.org"] [Text "edge-admin"]
+
+ds:
+    This is optional though. The user could still choose to use 3rd-party DNS name servers. This is what I'd like to cover today.
