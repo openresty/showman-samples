@@ -47,6 +47,7 @@ OpenResty Tutorials
 [OpenResty-Tutorials/](OpenResty-Tutorials/) is for our [OpenResty Tutorials](https://www.youtube.com/playlist?list=PLlR4WakbzQp0iUvHwJeBcG5MKWgGa_ahU) YouTube playlist.
 
 * Screenplay [or-hello-world.nav](OpenResty-Tutorials/or-hello-world.nav) is for video [Hello World HTTP Example in OpenResty/Nginx](https://youtu.be/eSfYLvVQMxw).
+* Screenplay [or-lua-module.nav](OpenResty-Tutorials/or-lua-module.nav) is for video [Write Your Own Lua Modules in OpenResty/Nginx Applications](https://youtu.be/vfYxOMl5LVY).
 
 [Back to TOC](#table-of-contents)
 

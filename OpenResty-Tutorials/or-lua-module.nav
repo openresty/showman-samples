@@ -1,0 +1,171 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/vfYxOMl5LVY
+
+[V=browser-hello-module.mp4] Hello, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to write your own Lua modules in your OpenResty applications, step by step.
+
+Let's put our simple OpenResty application in a new directory named 'test-module'.
+
+    $ cd ~/
+    $ mkdir test-module/
+    $ cd test-module/
+
+And then we create the sub-directory structure as always:
+
+    $ mkdir logs conf lua
+
+[S] Note that unlike the "Hello World" example in our previous tutorial, we create a 'lua' directory here to hold our Lua module files.
+
+Now let's create our own Lua module file named hello.lua under the 'lua' sub-directory.
+
+    vim lua/hello.lua
+
+Declare the Lua module table '_M'.
+
+    i [NONL]
+    local _M = {}
+    [NOP]
+
+Now add a function named 'greet' to this Lua module.
+
+    function _M.greet(name)
+    ngx.say("Greetings from ", name)
+    end
+    [NOP]
+
+Finally, don't forget to return the module table in the end.
+
+    return _M
+
+[S] That's it! A very simple Lua module is done now.
+
+Let's save and quit.
+
+    [ESC]
+    :wq
+    $
+
+Now it's time to create the nginx.conf file.
+
+    vim conf/nginx.conf
+
+We write the boilerplate configuration quickly.
+
+    i [NONL]
+    worker_processes 1;
+    [NOP]
+
+    events {
+    worker_connections 1024;
+    }
+    [NOP]
+
+In the 'http' configuration block, we should tell OpenResty where our Lua modules reside.
+
+    http {
+    lua_package_path "$prefix/lua/?.lua;;";
+    [NOP]
+
+[S] Note the special variable '$prefix' is replaced by the nginx '-p' option value at runtime.
+
+Then we create an HTTP server listening on the 8080 port.
+
+    server {
+    listen 8080 reuseport;
+    [NOP]
+
+And a root location with 'content_by_lua_block'.
+
+    location / {
+    default_type text/plain;
+    content_by_lua_block {
+
+Here we load our Lua module 'hello' with the 'require' built-in function.
+
+    local hello = require "hello"
+
+We call its 'greet' function with an argument.
+
+    [BS]hello.greet("a Lua module")
+
+Now finish it up.
+
+    }
+    }
+    }
+    }
+
+Save and quit.
+
+    [ESC]
+    :wq
+    $
+
+Let's check the whole directory tree right now.
+
+    $ tree .
+
+[S] Looking good.
+
+Now start this OpenResty application.
+
+    $ nginx -p $PWD/
+
+Time to query our HTTP interface with the 'curl' command-line utility.
+
+    $ curl 'http://127.0.0.1:8080/'
+
+[S] Cool, our Lua module is working!
+
+[V=browser-hello-module.mp4] We can also test it in a web browser.
+
+[S] If you see 500 error page, then there must be an error in your Lua code.
+
+In this case, you should check the error.log file under the 'logs' sub-directory.
+
+    $ tail logs/error.log
+
+[S] Here we don't have any errors logged, as expected.
+
+[S] It's worth noting that our Lua module is loaded in this first request and subsequent requests will just use the cached Lua module in memory. To avoid the extra overhead in the first request, we can preload the Lua module upon server startup.
+
+To do this, we should edit the nginx.conf file a bit.
+
+    vim conf/nginx.conf
+    /http {
+    o [NONL]
+
+We add an 'init_by_lua_block' directive right here.
+
+    init_by_lua_block {
+
+And load our Lua module in this context.
+
+    require "hello"
+    }
+
+[S] The 'init_by_lua_block' runs when the OpenResty server starts up.
+
+Save and quit.
+
+    [ESC]
+    :wq
+    $
+
+Test if the configuration is sane.
+
+    $ nginx -p $PWD/ -t
+
+[S] Good.
+
+Now we reload the server by sending the 'HUP' signal to the nginx master process.
+
+    $ kill -HUP `cat logs/nginx.pid`
+
+[S] The master process's ID is stored in this `nginx.pid` file.
+
+Send the HTTP request again.
+
+    $ curl 'http://127.0.0.1:8080/'
+
+[S] Same behavior, just a little bit faster this time.
