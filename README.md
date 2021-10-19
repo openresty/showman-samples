@@ -62,6 +62,7 @@ It contains the following screenplay files:
 * Screenplay [restydoc.nav](OpenResty-Tutorials/restydoc.nav) is for video [Lookup OpenResty Documentation on Terminal with restydoc](https://youtu.be/_PjpdUEeKeM).
 * Screenplay [time-lua.nav](OpenResty-Tutorials/time-lua.nav) is for video [Measure Execution Time of Lua Code Correctly in OpenResty](https://youtu.be/VkRYW_qLoME).
 * Screenplay [luajit-bytecode.nav](OpenResty-Tutorials/luajit-bytecode.nav) is for video [Precompile Lua Modules into LuaJIT Bytecode to Speedup OpenResty Startup](https://youtu.be/EP7c0BM2yNo).
+* Screenplay [stream-resp.nav](OpenResty-Tutorials/stream-resp.nav) is for video [Streaming HTTP Response Output in OpenResty](https://youtu.be/4VQP7eKq4oA).
 
 [Back to TOC](#table-of-contents)
 

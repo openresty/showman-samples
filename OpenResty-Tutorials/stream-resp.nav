@@ -1,0 +1,233 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/4VQP7eKq4oA
+
+lang "en"
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. In this video, I'll demonstrate how to do streaming response output in OpenResty.
+
+        $ cd ~/
+        $ mkdir stream-resp/
+        $ cd stream-resp/
+
+    We create the sub-directory structure as always.
+
+        $ mkdir logs conf html
+
+    We write the boilerplate configuration quickly.
+
+        vim conf/nginx.conf
+        i [NONL]
+        worker_processes 1;
+        [NOP]
+        events {
+        worker_connections 1024;
+        }
+        [NOP]
+        http {
+
+    We create an HTTP server listening on the 8080 port.
+
+        server {
+        listen 8080 reuseport;
+        [NOP]
+
+    And a test location.
+
+        location = /test {
+
+    It is important to specify this MIME type to make the Chrome web browser happy.
+
+        default_type application/octet-stream;
+        [NOP]
+
+    Time to add some Lua code.
+
+        content_by_lua_block {
+
+    Now we output one line of output every one second.
+
+        for i = 1, 4 do
+        ngx.say("hello ", i)
+
+    We need to call the flush method explicitly to flush nginx's write buffers.
+
+        [BS]ngx.flush(true)
+
+    [S] This is a 100% nonblocking call.
+
+    And we sleep for one second in each loop iteration.
+
+        ngx.sleep(1) -- sec
+
+    [S] And this is nonblocking as well.
+
+        [BS]end
+        }
+        }
+
+    Then we create a root location for the `html` directory.
+
+        [NOP]
+        location / {
+        default_type text/html;
+        root html;
+        }
+        }
+        }
+
+    Save and quit.
+
+        [ESC]
+        :wq[NONL]
+        [SLEEP=1][NOP]
+        $
+
+    Let's check the whole directory tree right now.
+
+        $ tree .
+
+    [S] Looking good.
+
+    Now start this OpenResty application.
+
+        $ openresty -p $PWD/
+
+    Time to query our HTTP location with 'curl'.
+
+        $ curl 'http://127.0.0.1:8080/test'
+
+    [S] Cool, it is indeed generating one line of per second!
+
+    To verify if everything is indeed nonblocking, we can load this HTTP API with the `weighttp` utility. Note that it will take a while because we have intentionally slow responses here.
+
+        $ weighttp -c 500 -k -n 500 127.0.0.1:8080/test
+
+    [S] So with 500 concurrent connections, we can still achieve more than 120 requests per second! Note that each request takes 4 seconds to complete. And here we are using only a single worker process and a single operating system thread.
+
+    We can still increase the concurrency level a lot. But we will need to tweak the nginx configuration accordingly.
+
+        vim conf/nginx.conf
+
+    Like tuning the worker connections to a larger value.
+
+        /worker_connections
+
+    Better performance can also be achieved by enabling the access log buffering. We can also reduce the request memory pool size.
+
+        [ESC]
+        :wq[NONL]
+        [SLEEP=1][NOP]
+        $
+
+    Now let's create an HTML page to test it out in a web browser.
+
+        vim html/a.html
+        i [NONL]
+        <!doctype html>
+        <html>
+        [BS]<body>
+
+    Add a `DIV` tag to hold the output.
+
+        [BS]<div style="margin: 2em;" id="out" />
+        [NOP]
+
+    Add some JavaScript to send an AJAX request to our previous HTTP location.
+
+        [BS]<script>
+        [BS](function () {
+        let xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/test", true);
+        xhttp.send();
+        [NOP]
+
+    We fetch out `DIV` element.
+
+        let div = document.getElementById("out")
+        [NOP]
+
+    Let's add a JavaScript function to do streaming response receiving.
+
+        let total_len = 0
+        let check_resp = function () {
+        let resp = xhttp.responseText
+        let len = resp.length
+
+    Make sure there is new data.
+
+        if (len > total_len) {
+        let new_data = resp.substring(total_len, len)
+        total_len = len;
+
+    Append our new data to the `DIV` element.
+
+        div.innerHTML += new_data + "<br/>"
+
+    [S] Here we are lazy. We do not bother escaping special HTML characters.
+
+        }
+        };
+        [NOP]
+
+    And we check new incoming response data every second.
+
+        let timer = setInterval(check_resp, 1000);
+        check_resp();
+        [NOP]
+
+    [S] Firefox supports a more clever way but we have to support Chrome as well.
+
+    Finally, we handle the end of the response body stream.
+
+        xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+
+    Check the response data for one last time.
+
+        check_resp();
+
+    Remove our periodic timer.
+
+        clearInterval(timer);
+
+    And append the final output to the web page.
+
+        div.innerHTML += "done<br/>";
+        }
+        };
+
+    [S] We omit error handling here for brevity.
+
+    Wrapping up.
+
+        })();
+        </script>
+        </body>
+        </html>
+
+    Let's save and quit the file.
+
+        [ESC]
+        :wq[NONL]
+        [SLEEP=1][NOP]
+        $
+
+    Let's check the whole directory tree again.
+
+        $ tree .
+
+    We don't need to reload or restart the OpenResty server since it is just a static HTML page.
+
+        $ ps aux|grep nginx|grep -v /tmp/
+
+d:
+    Time to point chrome to this HTML page.
+
+goto "http://127.0.0.1:8080/a.html"
+
+sleep 5s
+
+ds:
+    It works! This is all I want to cover today.
