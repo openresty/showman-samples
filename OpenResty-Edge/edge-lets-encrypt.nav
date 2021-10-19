@@ -1,0 +1,515 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/OBrJlaAPv1k
+
+d(image=letsencrypt.jpg):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd like to show how to automatically issue free SSL certificates via Let's Encrypt in OpenResty Edge.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+lang 'en'
+goto "https://admin.openresty.com"
+
+d:
+    This time we use our continuing sample application for the !$*EDGE_APP! domain.
+
+e:
+    [Textbox "Search domain..."]=search
+
+"$*EDGE_APP\n" -> search
+
+e:
+    [Text "HTTP"] [Link "$*EDGE_APP"]=app [Link /.*?HTTPS:\s*443.*/]=type [Button "Edit"]
+
+d:
+    We can see that it already listens on the 443 port for SSL.
+
+callout -> type
+
+d:
+    Let's enter this application.
+
+click -> app
+
+d:
+    Here we need to demo sub-domain names, so we need to adjust the application's settings first.
+
+e:
+    [Link "Tests"]
+    [Link "Settings"]=settings
+    [Link "Access Control"]
+
+click -> settings
+
+mouse right 500px
+
+e:
+    [Button "Add a new (wildcard) domain"]=add
+
+d:
+    Let's add a new wildcard domain name to this application.
+
+click -> add
+
+e:
+    [Textbox ""]=dom
+    [Button "Add a new (wildcard) domain"]
+
+"*.test-edge.com" -> dom
+
+e:
+    [Button "Save"]=save
+
+d:
+    Save it.
+
+click -> save
+
+e:
+    [Text "You have 1 pending change"]=pending [Link "to be released"]=rel
+
+d:
+    Let's push out this change to our gateway servers. Because Let's Encrypt servers will need to verify our domains' ownership shortly.
+
+click -> rel
+
+e:
+    [Button "Release the 1 pending change"]=rel
+
+d:
+    Release our pending changes.
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=ship
+
+d:
+    Ship it!
+
+click -> ship
+
+e:
+    [Link "DNS"]
+    [Link "SSL"]=ssl
+    [Link "User Variables"]
+
+d:
+    Goto the SSL page.
+
+click -> ssl
+
+sleep 100ms
+
+mouse right 500px
+
+e:
+    [Text "There's no certificates added."]=note
+
+d:
+    We can see that there are no SSL certificates defined yet.
+
+callout -> note
+
+e:
+    [Button "Reorder"] [Button "Add Certificate"]=add
+
+d:
+    Let's add a new certificate.
+
+click -> add
+
+e:
+    [Label "Source"] [Radio "Manual Upload"]=upload
+                     [Radio "Let's Encrypt"]=le
+                     [Radio "General ACME Issuer"]=custom
+                     [Radio "Global Certificate"]=global
+
+d:
+    We support various different ways to issue new SSL certificates.
+
+callout ->  upload, le, custom, global
+
+d:
+     Here we'd just demonstrate the Let's Encrypt way.
+
+click -> le
+
+e:
+    [Textbox "Domains"]=dom
+
+d:
+    Add the apex domain name !$*EDGE_APP! to this certificate.
+
+"test-edge.com" -> dom
+
+e:
+    [Button "Add a new (wildcard) domain"]=add
+
+d:
+    Add more sub-domain names.
+
+click -> add
+
+e:
+    #[Textbox "text-edge.com"]=apex
+    [Textbox ""]=second
+    [Button "Add a new (wildcard) domain"]=add
+
+d:
+    Enter our `api` subdomain. It could be anything.
+
+"api.$*EDGE_APP" -> second
+
+e:
+    [Button "Add a new (wildcard) domain"]=add
+
+d:
+    We could add even more.
+
+callout -> add
+
+e:
+    [Button "Batch Input Domains"]=batch
+
+d:
+    We could use the batch input mode if we have many domains.
+
+click -> batch
+
+e:
+    [Textbox "Domains"]=dom
+
+d:
+    We can enter many domains here, line by line.
+
+callout -> dom
+
+e:
+    [Button "Apply"]=apply [Link "Cancel"]=cancel
+
+d:
+    Quit the batch input mode.
+
+click -> cancel
+
+e:
+    [Textbox "Domains"]=first
+    [Textbox ""]=second
+    [Button "Add a new (wildcard) domain"]
+
+d:
+    All the domain names here must be resolved to the gateway servers of this OpenResty Edge deployment.
+
+callout -> first, second
+
+e:
+    [Text /Make sure the DNS A or AAAA records of .*/]=tip
+
+d:
+    This requirement is also mentioned here.
+
+callout -> tip
+
+term:
+    On the terminal, we can use the `dig` command to test if the domain has already resolved to our gateway servers.
+
+        dig test-edge.com
+
+    [H="test-edge.com." "138.68.231.133"] We can see the valid DNS answer here.
+
+    And also test the other `api` subdomain.
+
+        dig api.test-edge.com
+
+    [H="api.test-edge.com." "138.68.231.133"] Again, the DNS answer is good.
+
+d(image=letsencrypt.jpg):
+    The Let's Encrypt servers need to access our gateway servers through these domains. This is because they must make sure that we indeed own these domains.
+
+d(image=dns-authority.jpg):
+    For wildcard domains, you must also use OpenResty Edge as the authoritative DNS name servers for the domains.
+
+e:
+    [Checkbox /I agree to .*/]=agree
+
+d:
+    Agree to the Lets' Encrypt Subscriber Agreement.
+
+click -> agree
+
+e:
+    [Link "cancel"] [Button "Save"]=save
+
+d:
+    Save it.
+
+click -> save
+
+e:
+    [Text "Let's Encrypt"]=src [Text /.*test-edge\.com/]=dom1 [Button "pending"]=pending [Button "Delete"]=del
+                               [Text /.*api\.test-\s*edge\.com/]=dom2
+
+d:
+    We can see the new row for the Let's Encrypt certificate.
+
+callout -> src, pending, dom2, del
+
+d:
+    The certificate source is Let's Encrypt.
+
+callout -> src
+
+d:
+    It has two domain names, as expected.
+
+callout -> dom1, dom2
+
+e(20s):
+    [Text "Let's Encrypt"]=src [Text /.*test-edge\.com/]=dom1 [Button "valid"]=status [Button "Delete"]=del
+                               [Text /.*api\.test-\s*edge\.com/]=dom2
+
+d:
+    We can view the real time status here.
+
+callout -> status
+
+e:
+    [Text "Let's Encrypt"]=src [Text /.*test-edge\.com/]=dom1 [Button "valid"]=status [Button "Delete"]=del
+                               [Text /.*api\.test-\s*edge\.com/]=dom2
+
+d:
+    We can check the detailed progress by clicking on this status icon.
+
+click -> status
+
+e:
+   [Title "Severity"]=col1 [Title "Time"] [Title "Message"]=col3
+   [Text /.*?authentication after \d+\.\d+ seconds/]=msg
+   [Text "info"] [Text /.*?new certificate order created/]=first
+
+d:
+    We can observe the detailed logs regarding the Let's Encrypt certificate issuing process here.
+
+callout -> col1, col3, msg, first
+
+e:
+    [Text 'A valid certificate has been obtained and installed.']=cmt
+
+d:
+    We can see now the certificate has been issued.
+
+callout -> cmt
+
+e:
+    [Button "close"]=cancel
+
+d:
+    Let's quit this status page.
+
+click -> cancel
+
+e:
+    [Title "Expires"]=col
+
+d:
+    We can view the expiration time of the new certificate in this column.
+
+callout -> col
+
+e:
+    [Text "in 3 months"]=exp
+
+d:
+    We can see that the certificate will expire in 3 months.
+
+callout -> exp
+
+#hover -> exp
+
+#sleep 2s
+
+e:
+    [Text /Next Auto Update/]=next
+
+d:
+    And OpenResty Edge will automatically update the certificate when it is about to expire in the future.
+
+callout -> next
+
+e:
+    [Text /in 2 months/]=next
+
+d:
+    We can see the scheduled next update time will be in 2 months. That is, one month before it expires.
+
+hover -> next
+
+sleep 2s
+
+d:
+    We can also edit an existing Let's Encrypt certificate.
+
+e:
+    [Button "Edit"]=edit [Button "Delete"]=del
+
+click -> edit
+
+e:
+    [Link "Cancel"]=cancel [Button "Save"]
+
+d:
+    We don't make any changes here.
+
+click -> cancel
+
+d:
+    Or we can delete this certificate.
+
+e:
+    [Button "Edit"]=edit [Button "Delete"]=del
+
+click -> del
+
+e:
+    [Link "Cancel"]=cancel [Button "Delete"]
+
+d:
+    We don't want to delete it now.
+
+click -> cancel
+
+e:
+    [Text "Enable"]
+    [Toggle "Enable SSL Certificate"]=enable
+
+d:
+    We can also disable a certificate without removing it.
+
+callout -> enable
+
+d:
+    It can then be re-enabled again.
+
+callout -> enable
+
+e:
+    [Text /You have \d+ pending changes?/] [Link "to be released"]=rel
+
+d:
+    We need to make a new release to push out our new certificate, as always.
+
+click -> rel
+
+e:
+    [Button /Release the \d+ pending changes?/]=rel
+
+d:
+    Click on this button.
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=rel
+
+d:
+    Ship it!
+
+click -> rel
+
+e(3s):
+    [Text /Sync Status: \d+ \/ \d+ \(100%\)/]=note
+
+d:
+    It is done now!
+
+callout -> note
+
+d(video=edge-sync.mp4):
+    Now the new certificate has been pushed to all the gateway clusters and servers.
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient and scalable.
+
+d(image=update-letsencrypt.jpg):
+    OpenResty Edge will then automatically update these certificates from Let's Encrypt again before they expire.
+
+d(image=cert-about-to-expire.png):
+    If for some reason, some certificates fail to update, the user will get global notifications like this.
+
+d:
+    Let's open a new browser tab to access the !$*EDGE_APP! site via `https`.
+
+new tab test
+
+goto https://$*EDGE_APP/
+
+sleep 1s
+
+ds:
+    It works!
+
+d:
+    Also test the `api` subdomain.
+
+close tab test
+
+new tab test2
+
+goto https://api.$*EDGE_APP/
+
+sleep 1s
+
+d:
+    It works too!
+
+close tab test2
+
+d:
+    We can also pick up a gateway cluster server to test our new certificate on the terminal.
+
+e:
+    [Link /Gateway Clusters.*/]=clusters [Link "Global Config"]
+
+click -> clusters
+
+e:
+    [Link "aws-sfo"]=name [Text "138.68.231.133"]=ip
+
+d:
+    We choose a gateway server here near San Francisco.
+
+callout -> name
+
+d:
+    Copy its public IP address ending with 133.
+
+click -> ip
+
+term:
+    On the terminal, we can send an HTTPS request to this gateway server.
+
+        cd ~
+        curl -I --resolve 'test-edge.com:443:138.68.231.133' https://test-edge.com/
+
+    [S] It works!
+
+    We can check more details like the certificate information by passing the `-v` option.
+
+        [UP] -v 2>&1 | less[NONL]
+
+    Run this command.
+
+        [NOP]
+        [SLEEP=1.5][SP][NONL]
+
+    [H="Server certificate:" /cert's "test-edge.com"/ "SSL certificate verify ok."] We can indeed see our server certificate here. We can also see the certificate is indeed issued by Let's Encrypt.
+
+    Quit it.
+
+        [SLEEP=1]q[NONL]
+        $
+        [NOP]
+
+    [S] This is what I'd love to cover today.
