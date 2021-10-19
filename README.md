@@ -50,6 +50,7 @@ OpenResty Tutorials
 * Screenplay [or-lua-module.nav](OpenResty-Tutorials/or-lua-module.nav) is for video [Write Your Own Lua Modules in OpenResty/Nginx Applications](https://youtu.be/vfYxOMl5LVY).
 * Screenplay [resty-cmd.nav](OpenResty-Tutorials/resty-cmd.nav) is for video [OpenResty's resty Command-Line Utility Demo](https://youtu.be/L1c7aw4mSOo).
 * Screenplay [centos8-or-install.nav](OpenResty-Tutorials/centos8-or-install.nav) is for video [Install OpenResty on CentOS 8 via dnf](https://youtu.be/B5lfAZunxfc).
+* Screenplay [data-share.nav](OpenResty-Tutorials/data-share.nav) is for video [Share Data Across Requests Served by OpenResty](https://youtu.be/AVR5Ft6FXTo).
 
 [Back to TOC](#table-of-contents)
 

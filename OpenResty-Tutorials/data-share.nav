@@ -1,0 +1,208 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/AVR5Ft6FXTo
+
+lang 'en'
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. Today we will discuss how to share data across different HTTP requests served by an OpenResty application.
+
+        $ cd ~/
+        $ mkdir data-share
+        $ cd data-share/
+        $ mkdir conf logs lua
+        $ tree
+
+    [S] We first prepare our test application's directory tree.
+
+    The easist way to share data among requests is to use a custom Lua module.
+
+        vim lua/my-module.lua
+        i[NONL]
+        local _M = {}
+        [NOP]
+
+    We add a global `counter` variable on the top-level of this module.
+
+        local counter = 0
+        [NOP]
+
+    Then we always increment this counter in a module function named `main`.
+
+        function _M.main()
+        counter = counter + 1
+
+    and return the new counter value.
+
+        return counter
+        end
+        [NOP]
+        return _M
+
+    Let's save the file an quit vim.
+
+        [ESC]
+        :wq
+        $
+
+    Now let's quickly craft the nginx configuration file.
+
+        vim conf/nginx.conf
+        i[NONL]
+        worker_processes 1;
+        [NOP]
+
+        events {
+        worker_connections 1024;
+        }
+        [NOP]
+
+    Here we specify where to look for our Lua module.
+
+        http {
+        lua_package_path "$prefix/lua/?.lua;;";
+        [NOP]
+
+    Then define a server listening on the local 8080 port.
+
+        server {
+        listen 8080;
+        [NOP]
+
+    And a root location with `content_by_lua_block`.
+
+        location / {
+        default_type text/plain;
+        content_by_lua_block {
+
+    Load up our Lua module and invoke its `main` function.
+
+        local mod = require "my-module"
+        [BS]local cnt = mod.main()
+
+    And output the returned counter value as the response body.
+
+        ngx.say("counter = ", cnt)
+        }
+        }
+        }
+        }
+
+    Save the file and quit vim.
+
+        [ESC]
+        :wq
+        $
+
+    Let's check the directory tree again.
+
+        $ tree .
+
+    [S] Looking good.
+
+    Start this OpenResty application without `sudo`.
+
+        $ openresty -p $PWD/
+
+    Here we only enable a single worker process.
+
+        $ ps aux|grep nginx|grep -v tmp
+
+    Send an HTTP request to the server using `curl`:
+
+        $ curl 'http://127.0.0.1:8080/'
+
+    [S] The counter value is 1.
+
+    Again.
+
+        [UP]
+        $
+
+    [S] Cool, it's 2 now.
+
+    It will only keep growing.
+
+        [UP]
+        $
+        [UP]
+        $
+        [UP]
+        $
+
+    This `counter` Lua variable is shared because it is an `up value` of the Lua module function.
+
+        $ cat lua/my-module.lua
+
+    And the Lua module is cached and shared in the global LuaJIT virtual machine.
+
+        $ resty -Ilua -e 'require "my-module" print(package.loaded["my-module"].main)'
+
+    [S] See? We can also access the cached Lua module directly.
+
+    The `package.loaded` global table holds all the loaded Lua modules.
+
+        resty -e 'for k, v in pairs(package.loaded) do print(k) end' | less
+
+    Here, most of the modules are those standard ones.
+
+        [SLEEP=1][SP][NONL]
+        [SLEEP=1]q[NONL]
+        $
+
+    There is a limitation, however. Such data cannot be shared among different nginx worker processes.
+
+        vim conf/nginx.conf
+        /worker_proc
+
+    [S] It's not a problem here because only 1 worker process is configured.
+
+    But usually we would utilize multiple CPU cores by enabling multiple worker processes.
+
+        [SLEEP=1]w[NONL]
+        [SLEEP=1]cw[NONL]
+        [SLEEP=1]4[NONL]
+
+    [S] Then each worker process would have its own counter.
+
+    Let's test the configuration and then reload the server.
+
+        [ESC][NONL]
+        :wq
+        $
+
+        $ openresty -p $PWD/ -t
+        $ kill -HUP `cat logs/nginx.pid`
+
+    Now we should have 4 worker processes.
+
+        $ ps aux|grep nginx|grep -v tmp
+
+    [S] So this Lua module data sharing approach is mostly useful for Lua level data caching.
+
+    The resty.lrucache Lua module shipped with OpenResty is designed for such use cases.
+
+        restydoc resty.lrucache
+
+    We will cover this module in a future tutorial.
+
+        [SLEEP=1][SP][NONL]
+        [SLEEP=1][NONL]
+
+    If we want to share data across all the worker processes, we should use the Lua shared memory dictionaries instead.
+
+        q[NONL]
+        $
+        restydoc -s lua_shared_dict
+        [SLEEP=2] q [NONL]
+        $
+
+        restydoc -s ngx.shared.DICT
+        [SLEEP=1] [SP] [NONL]
+
+    [S] We will cover this topic in another dedicated tutorial.
+
+        q[NONL]
+        $
+
+    [S] That's all I'd like to cover today. Happy hacking!
