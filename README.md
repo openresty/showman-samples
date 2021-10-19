@@ -60,6 +60,7 @@ It contains the following screenplay files:
 * Screenplay [centos8-or-install.nav](OpenResty-Tutorials/centos8-or-install.nav) is for video [Install OpenResty on CentOS 8 via dnf](https://youtu.be/B5lfAZunxfc).
 * Screenplay [data-share.nav](OpenResty-Tutorials/data-share.nav) is for video [Share Data Across Requests Served by OpenResty](https://youtu.be/AVR5Ft6FXTo).
 * Screenplay [restydoc.nav](OpenResty-Tutorials/restydoc.nav) is for video [Lookup OpenResty Documentation on Terminal with restydoc](https://youtu.be/_PjpdUEeKeM).
+* Screenplay [time-lua.nav](OpenResty-Tutorials/time-lua.nav) is for video [Measure Execution Time of Lua Code Correctly in OpenResty](https://youtu.be/VkRYW_qLoME).
 
 [Back to TOC](#table-of-contents)
 

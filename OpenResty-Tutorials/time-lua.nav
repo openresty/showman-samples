@@ -1,0 +1,209 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/VkRYW_qLoME
+
+term:
+    Hi, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to benchmark some Lua code in OpenResty.
+
+        cd ~
+        mkdir time-lua
+        cd time-lua/
+
+    First of all, make sure our CPU is always at its full speed.
+
+        $ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+    [S] It usually takes the value `powersave` by default.
+
+    The simplest way to time some Lua code is to use the `time` command with the `resty` command.
+
+        time resty -e 'ngx.re.find("hello, world.", [[\w+\.]], "jo")'
+
+    [S] But there is a catch.
+
+    The `resty` command itself has a startup and exiting overhead.
+
+        time resty -e ''
+
+    [S] We can see there's overhead of about 11 milliseconds on this machine.
+
+    Instead, we should use the `ngx.now` Lua API function provided by OpenResty.
+
+        restydoc -s ngx.now[NONL]
+        [SLEEP=1][NOP]
+        [SLEEP=2][SP][NONL]
+
+    Let's put our Lua code into a file for better readablility.
+
+        q[NONL]
+        $
+
+        vim bench.lua
+
+    First of all, we make sure the cached time inside nginx is up to date.
+
+        i[NONL]
+        ngx.update_time()
+
+    And then we record the begin time which has millisecond precision.
+
+        local begin = ngx.now()
+
+    And then put our aforementioned regex matching call.
+
+        ngx.re.find("hello, world.", [[\w+\.]], "jo")
+
+    And then we update our cached time again.
+
+        ngx.update_time()
+
+    Finally, output the elapsed time by doing a time subtraction.
+
+        ngx.say("elapsed seconds: ", ngx.now() - begin)
+        [ESC][NOP]
+
+    Let's save the file.
+
+        :w[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/C written/][NOP]
+
+    Then run the `resty` shell command from within vim.
+
+        :!resty %[NONL]
+
+    [S] The percent sign will be replaced by vim with the current file path.
+
+        [NOP]
+        [EXP=/Press ENTER or type command to continue/][NONL]
+
+    [S] It records about a latency of 1 millisecond. But we will soon see it is very inaccurate.
+
+        [NOP]
+
+    The correct way is to put the call into a Lua function named `target`.
+
+        /ngx\.re
+        dd[NONL]
+        [SLEEP=0.5]k[NONL]
+        k[NONL]
+        [SLEEP=0.5]P[NONL]
+        >>[NONL]
+        O[NONL]
+        local function target()[NONL]
+        [ESC][NONL]
+        j[NONL]
+        o[NONL]
+        end
+        [NOP]
+
+    And then call this function first for 100 times as a warmup.
+
+        for i = 1, 100 do
+        target()
+        end
+        [ESC][NONL]
+
+    [S] Now this `target` function should be JIT compiled after this loop is executed.
+
+    And then inside the timed code region, we call it repeatedly for 10 million times.
+
+        j[NONL]
+        j[NONL]
+        o[NONL]
+        [NOP]
+        local N = 1e7
+        for i = 1, N do
+        target()
+        end
+        [ESC][NONL]
+
+    Finally we compute the average time.
+
+        j[NONL]
+        j[NONL]
+        /,
+        w[NONL]
+        i[NONL]
+        ([NONL]
+        [ESC][NONL]
+        A[NONL]
+        [SP]/ N)[NONL]
+        [ESC][NONL]
+        :w[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/C written/][NOP]
+
+    We now run this script again.
+
+        :!resty %[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/Press ENTER or type command to continue/][NONL]
+
+    [S] We can see that it is merely about 30 nanoseconds per call. So many many times faster than the previous result!
+
+    Run it one more time.
+
+        [NOP]
+        :!resty %[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/Press ENTER or type command to continue/][NONL]
+        [SLEEP=2][NOP]
+
+    Actualy we can further make sure no dead GC objects hanging around before we time the code.
+
+        [NOP]
+        /update
+        O[NONL]
+        collectgarbage()
+        [ESC][NOP]
+        :w[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/C written/][NOP]
+
+    [S] Here we force a full GC cycle before recording the begin time.
+
+    It does not help much with our example here, however.
+
+        :!resty %[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/Press ENTER or type command to continue/][NONL]
+        [SLEEP=2][NOP]
+
+        :!resty %[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/Press ENTER or type command to continue/][NONL]
+        [SLEEP=2][NOP]
+
+    [S] This is because our timed code does not create many GC objects anyway.
+
+    We can make the `target` function faster by avoiding unnecessary Lua table lookup operations.
+
+        [NOP]
+        /ngx\.re
+        ct([NONL]
+        re_find[NONL]
+        [ESC][NONL]
+        k[NONL]
+        O[NONL]
+        local re_find = ngx.re.find
+        [ESC][NONL]
+        :w[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/C written/][NOP]
+
+    But the difference may not be measurable here.
+
+        :!resty %[NONL]
+        [SLEEP=1][NOP]
+        [EXP=/Press ENTER or type command to continue/][NONL]
+        [SLEEP=2][NOP]
+
+    This is what I'd cover today.
+
+       [NOP]
+       :wq[NONL]
+       [SLEEP=1][NOP]
+       $
+
+    [S] Hopefully you find it interesting.
