@@ -1,0 +1,217 @@
+# Copyright (C) by OpenResty Inc. All rights reserved
+#
+# The generated video is here: https://youtu.be/NIlOrqi-I8U
+
+lang "en"
+
+d(image=edge-upstream-host.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd show how to configure a different `Host` header for the requests sent to the upstream or backend servers. In this diagram, the client sends a request with the host `test-edge.com`. But the request sent to the origin site is another host, `blah.com`.
+
+d:
+    As always, let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own local deployment.
+
+goto "https://$*EDGE_ADMIN_HOST"
+
+e:
+    [Textbox "Search domain..."] = search
+
+d:
+    We still use our continuing sample application for the !$*EDGE_APP! domain.
+
+"$*EDGE_APP\n" -> search
+
+e:
+    [Label "HTTP"] [Link /^$*EDGE_APP\b.*/]=app
+
+d:
+    Let's enter this application.
+
+click -> app
+
+e:
+    [Link "Upstreams"]=up
+
+d:
+    We already have an upstream defined in our earlier tutorial.
+
+click -> up
+
+sleep 100ms
+
+mouse right 600px
+
+e:
+    [Text "my_backend"]=backend [Text "1"]=cnt [Text "http://54.213.103.191:80"]=url
+
+d:
+    This `my_backend` upstream has a backend server defined already.
+
+callout -> backend, cnt
+
+d:
+    Note the IP address of the backend server ends with number `191`. We will use this IP address later.
+
+callout -> url
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+    [Link "Cache Purge"]
+
+d:
+    And we also have a page rule already defined.
+
+click -> rules
+
+sleep 300ms
+
+mouse right 550px
+
+e:
+    [Text "Always"]=cond [Text "Proxy"]=proxy
+                        [Text "Balancing policy: Round Robin"]=rr
+
+d:
+    This page rule sets up a reverse proxy to the upstream we just saw.
+
+callout -> cond, proxy, rr
+
+d(image=edge-upstream-host-same.png):
+    We'll send a test request to the gateway servers, and then check the `Host` request header received on the backend server. By default, it must be identical.
+
+term:
+    On the terminal, we use `curl` to send a request to our gateway servers via `test-edge.com`. We assume this domain is already resolved to our gateway servers.
+
+        $ curl -sSI 'http://$*EDGE_APP'
+
+    Then we log into the backend server of the IP ending with `191`:
+
+        ssh 54.213.103.191
+        [NEWSH][NONL][NOP]
+
+    Check the last entry in the server software's access log file.
+
+        $ tail -1 /usr/local/openresty/nginx/logs/access.log
+
+    [H="$*EDGE_APP"] The `Host` header of the forwarded request is indeed `$*EDGE_APP`.
+
+d(image=edge-upstream-host.png):
+    Now we'd configure OpenResty Edge to make it send a different Host header to the backend, say, `blah.com`.
+
+d:
+    Now we try to modify the Host header of the upstream requests.
+
+e:
+    [Text "Always"] [Button "Edit"]=edit [Button "Delete"]
+
+d:
+    Let's edit the existing proxy page rule.
+
+click -> edit
+
+e:
+    [Label "Action"]
+    [Button "Add a new action"]=new_action
+
+d:
+    Add a new action, "set proxy host".
+
+click -> new_action
+
+e:
+    [Label "Action"]
+    [Text "Select or Search Action Types"]=search
+
+d:
+    Let's search for "Set proxy host".
+
+click -> search
+
+e:
+    [Textbox "Select or Search Action Types"]=search
+
+"Set proxy host" -> search
+
+e:
+    [Text "Set proxy host"]=set_proxy_host
+
+d:
+    Select it.
+
+click -> set_proxy_host
+
+e:
+    [Label "Host name"] [Textbox "Host name"]=hostname
+
+d:
+    Fill in the host name, `blah.com`.
+
+"blah.com" -> hostname
+
+e:
+    [Link "Cancel"] [Button "Save"]=save
+
+d:
+    Save our changes.
+
+click -> save
+
+# release
+e:
+    [Text "You have 1 pending change"]=pending [Link "to be released"]=rel
+
+d:
+    As always, we need to make a new release to push out our edited page rule.
+
+click -> rel
+
+e:
+    [Button /Release the \d+ pending changes?/]=rel
+
+d:
+    Click on this button.
+
+click -> rel
+
+e:
+    [Button "Cancel"]        [Button "Release"]=rel
+
+d:
+    Ship it!
+
+click -> rel
+
+e:
+    [Text /Sync Status: \d+ \/ \d+ \(100%\)/]=note
+
+d:
+    It is fully synchronized.
+
+callout -> note
+
+d(video=edge-sync.mp4):
+    Now the new page rule has been pushed to all the gateway clusters and servers.
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient and scalable.
+
+d(image=edge-upstream-host.png):
+    This time, the `Host` request header received on the backend server should be `blah.com`. Let's check it out!
+
+term:
+    On the terminal, we send a request to our gateway servers again.
+
+        $ curl -sSI 'http://$*EDGE_APP'
+
+    Then log into the backend server of the IP ending with `191` again.
+
+        ssh 54.213.103.191
+        [NEWSH][NONL][NOP]
+
+    Check the last entry in the access log file.
+
+        $ tail -1 /usr/local/openresty/nginx/logs/access.log
+
+    [H="blah.com"] We see that the `Host` header of the forwarded request becomes `blah.com`, as expected.
+
+    [S] This is what I'd like to cover today.
