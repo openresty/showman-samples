@@ -1,0 +1,414 @@
+d(image=edge-cache-miss.png):
+    Hi, I'm Matthew from OpenResty Inc. Today I'd demonstrate how to enable HTTP response caching in OpenResty Edge.
+
+d(image=edge-cache-hit.png):
+    When the client requests hit the cache on the Edge Node server, no requests need to be sent to the backend server. This reduces response latency and saves network bandwidth.
+
+d:
+    Let's go to the OpenResty Edge's Admin web console. This is our sample deployment of the console. Every user has her own deployment.
+
+lang 'en'
+goto "https://admin.openresty.com/"
+
+e(5s):
+    [Label "Recent:"] [Link "$*EDGE_APP"]=app
+
+d:
+    We can continue with our previous application example, `test-edge.com`.
+
+click -> app
+
+e:
+                               [Text /SSL handshake rate limiting.*?/]
+    [Link "Page Rules"]
+    [Link "Upstreams"]=up
+    [Link "Cache Purge"]
+
+d:
+    We already have an upstream defined.
+
+click -> up
+
+sleep 100ms
+
+mouse right 600px
+
+e:
+    [Text "my_backend"]=backend [Text "1"]=cnt [Text "http://54.213.103.191:80"]=url
+
+d:
+    This `my_backend` upstream has only 1 backend server.
+
+callout -> backend, cnt
+
+d:
+    Note the IP address of the backend server ends with number 191. We will use this IP address later.
+
+callout -> url
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+    [Link "Cache Purge"]
+
+d:
+    And we also have a page rule already defined.
+
+click -> rules
+
+sleep 300ms
+
+mouse right 550px
+
+e:
+    [Text "Always"]=cond [Text "Proxy"]=proxy
+                        [Text "Balancing policy: Round Robin"]=rr
+
+d:
+    This page rule sets up a reverse proxy to this upstream.
+
+callout -> cond, proxy, rr
+
+ds:
+    Apparently we haven't enabled the proxy cache for this page rule yet.
+
+e:
+    [Text "Always"] [Text "Proxy"] [Button "Edit"]=edit [Button "Delete"]
+
+d:
+    Now let's edit this page rule to add response caching in the gateway.
+
+click -> edit
+
+mouse right 400px
+
+e(?):
+    [Label "Cache key components"]
+
+not-found:
+    e:
+        [Text "Cache"]=label [Toggle ""]=cache
+
+    d:
+        Let's enable the proxy cache.
+
+    callout -> label, cache
+
+    click -> cache
+
+    mouse right 300px
+
+e:
+    [Text "Cache key components"]=label [Text "URI"]=uri [Button ""]=del_uri
+                                        [Text "Query string"]=args [Button ""]=del_args
+                                        [Button "Add a new cache key component"]=add_comp
+
+d:
+    Here we can configure the cache key.
+
+#callout -> uri
+callout -> label, uri, del_uri, add_comp
+
+ds:
+    By default, the cache key consists of two components.
+
+d:
+    the URI
+
+callout -> uri
+
+d:
+    and the query string.
+
+callout -> args
+
+d:
+    You can choose to use other kinds of key components.
+
+click -> args
+
+e:
+    [Textbox 'Please select or search variable name']=args
+    [Text "URI"]=uri
+    [Text "URI argument"]=arg
+
+callout -> uri, arg
+
+sleep 300ms
+
+mouse right 400px
+
+d:
+    Or we can remove the whole query string from the key.
+
+press('Escape') -> args
+
+e:
+    [Text 'Query string'] [Button ""]=del_args
+
+callout -> del_args
+
+e:
+    [Text "Cache key components"]=label [Text "URI"]=uri
+                                        [Button "Add a new cache key component"]=add_comp
+
+d:
+    We can also add even more key components.
+
+callout -> add_comp
+
+ds:
+    For this example, we'll just keep the default cache key.
+
+e:
+    [Link "Cancel"] [Button "Save"]=save
+
+d:
+    Save this page rule.
+
+click -> save
+
+e:
+    [Text "You have 1 pending change"]=pending [Link "to be released"]=rel
+
+d:
+    Let's make a new release.
+
+click -> rel
+
+e:
+    [Button "Release the 1 pending change"]=rel
+
+d:
+    Push out our pending changes.
+
+click -> rel
+
+e:
+    [Link "Cancel"] [Button "Release"]=ship
+
+d:
+    Ship it!
+
+click -> ship
+
+e(4s):
+    [Text /Sync Status: .*?100%\)/]=progress
+
+d:
+    Our new release is now synchronized to all our gateway servers.
+
+callout -> progress
+
+d(image=req-sync4.png):
+    Our configuration changes do NOT require server reload, restart, or binary upgrade. So it's very efficient.
+
+e:
+    [Link "Applications"] [Link /Gateway Clusters.*/]=gateway [Link "Global Config"]
+
+d:
+    Let's test a gateway server for caching.
+
+click -> gateway
+
+e:
+    [Text "aws-sfo"] [Text "138.68.231.133"]=ip
+
+d:
+    We copy the IP address of this San Francisco gateway server.
+
+click -> ip
+
+sleep 300ms
+
+ds:
+    Note the last number of this IP address is 133.
+
+term:
+    On the terminal, we send an HTTP request to this gateway server via the `curl` command-line utility.
+
+        curl -I -H 'Host: test-edge.com' http://138.68.231.133/ [NONL]
+        [SLEEP=1]
+        $
+
+    [H="Cache-Status: MISS"] Note the `Cache-Status: MISS` response header returned.
+
+    Do it again.
+
+        [UP][NONL]
+        [SLEEP=1]
+        $
+
+    [H="Cache-Status: MISS"] We are still getting the `Cache-Status: MISS` header. It means that the cache is not used at all. Why? Because the original response header from the backend server lacks headers like `Expires` and `Cache-Control`.
+
+    We can log onto the backend server.
+
+        ssh ec2-user@54.213.103.191 [NONL]
+
+    [H="54.213.103.191"] Recall that the backend server's IP address ends with 191.
+
+    This backend server runs the open source OpenResty software.
+
+        [NOP]
+        [NEWSH][NONL]
+        $ ps aux | grep nginx
+
+    [I=different-edge-backends2.png] The backend server may run any other software that speaks HTTP.
+
+    We can send a test request to this backend server directly.
+
+        curl -I -H 'Host: test-edge.com' http://127.0.0.1/ [NONL]
+
+    [H="127.0.0.1"] Note that we are accessing the local host.
+
+    Run it.
+
+        [NOP]
+        $
+
+    [[H=/Server: openresty/ /Last-Modified: [A-Z].*? GMT/ "Accept-Ranges: bytes"]] Okay, it indeed does not provide any `Expires` or `Cache-Control` headers.
+
+    Now let's re-configure our backend server.
+
+        $ cd /usr/local/openresty/nginx/
+
+    Open the nginx configuration file.
+
+        sudo vim conf/nginx.conf
+
+    Find our root location.
+
+        :1
+        /location 
+
+    And add an expiration time of 1 hour.
+
+        o [NONL]
+        [TAB]expires 1h;
+        [ESC] [NONL]
+        [SLEEP=0.2]j[NONL]
+        [SLEEP=0.2]j[NONL]
+        [SLEEP=0.2]j[NONL]
+        [SLEEP=0.2]j[NONL]
+        [SLEEP=0.2]j[NONL]
+
+    [H="expires 1h"] Note that the backend server can define different expiration times for different locations. Or disable the cache completely for certain responses.
+
+    Save and quit the file.
+
+        :wq [NONL]
+        [SLEEP=1]
+        $
+
+    Test if the nginx configuration file is correct.
+
+        sudo ./sbin/nginx -t [NONL]
+        [SLEEP=1]
+        $
+
+    [H="test is successful"] Good.
+
+    Now reload the server.
+
+        $ sudo kill -HUP `cat logs/nginx.pid`
+
+    Note that for open source Nginx servers, the configuration is also the same.
+
+        $ cd ~
+
+    Time to test the backend server again.
+
+        $ curl -I -H 'Host: test-edge.com' http://127.0.0.1/
+
+    [H=/Expires: .*? GMT/ "Cache-Control: max-age=3600"] Yay! It responds with the `Expires` and `Cache-Control` headers now.
+
+    Send the request to the gateway server instead.
+
+        $ curl -I -H 'Host: test-edge.com' http://138.68.231.133/
+
+    [H="Cache-Status: MISS"] It still shows the `Cache-Status: MISS` header.
+
+    [I=edge-cache-miss2.png] It is an expected cache miss. Because this is our very first request.
+
+    Send the request again.
+
+        [UP][NONL]
+        [SLEEP=1]
+        $
+
+    [H="Cache-Status: HIT"] Great! We finally see the `Cache-Status: HIT` header!
+
+    [I=edge-cache-hit2.png] So it is now a cache hit as expected.
+
+    If we add a query string,
+
+        curl -I -H 'Host: test-edge.com' 'http://138.68.231.133/?a=3' [NONL]
+
+    [H="a=3"] note the `a=3` part,
+
+    then it will be a cache miss again.
+
+        [NOP]
+        $
+
+    [H="Cache-Status: MISS"] This is because the default cache key includes the query string.
+
+    Running the same request again should result in a cache hit.
+
+        [UP][NONL]
+        [SLEEP=1]
+        $
+
+    [H="Cache-Status: HIT"] It's indeed a cache hit now. If you don't care about the query string, you can remove it from the cache key.
+
+d:
+    Sometimes we are just too lazy to change the backend server's configuration. Then we can also enforce caching for responses without any cache controlling headers in the gateway.
+
+mouse right 300px
+
+e:
+    [Link "Applications"]=apps [Link "Dashboard"]
+
+click -> apps
+
+e:
+    [Label "Recent:"] [Link "$*EDGE_APP"]=app
+
+click -> app
+
+e:
+    [Link "Page Rules"]=rules
+    [Link "Upstreams"]
+
+d:
+    We can change our original page rule to enable this feature.
+
+click -> rules
+
+sleep 200ms
+
+mouse right 450px
+
+e:
+    [Text "Always"] [Text "Proxy"] [Button "Edit"]=edit [Button "Delete"]
+
+click -> edit
+
+e:
+    [Toggle "Caching by Default"]=default_cache
+
+d:
+    We enforce caching by default.
+
+click -> default_cache
+
+e:
+    [Textbox "1"]=num [Dropdown "min"]=unit
+
+d:
+    We can set the default expiration time for cacheable response status codes.
+
+callout -> num, unit
+
+ds:
+    We'll demonstrate this feature in another video.
